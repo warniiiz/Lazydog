@@ -1,54 +1,24 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-'''
-Created on 17 janv. 2018
- 
-@author: Warniiiz
-'''
+
 
 import time
 import datetime
+
 import logging
 import threading
 import os
-#from watchdog.observers import Observer
-#from watchdog.observers.inotify import InotifyObserver
-#from watchdog.events import LoggingEventHandler
-#from watchdog.events import FileSystemEventHandler
-#from watchdog.events import FileSystemEvent
-
-from hashers.dropbox_content_hasher import DropboxContentHasher
 
 
-#===============================================================================
-# from watchdog_pipoevents import FileSystemEvent
-# from watchdog_pipoevents import FileSystemEventHandler
-#===============================================================================
+from dropbox_content_hasher import default_hash_function 
 
 from revised_watchdog.events import FileSystemEventHandler, FileSystemEvent
 from revised_watchdog.observers.inotify import InotifyObserver
 
-
-
-from watchdog.observers.polling import (
-    PollingObserver
-    )
-
-
+from watchdog.observers.polling import PollingObserver
 
 
 __version__ = "0.1"
-
-
-### watchdog.observers.pipoinotify_buffer -> Nothing to change
-
-
-
-
-
-
-
-
 
 
 #===============================================================================
@@ -85,28 +55,7 @@ class LocalState():
     # Method to get the MD5 Hash of the file with the supplied file name.
     @staticmethod
     def _default_hashing_function(absolute_path:str):
-        _hash = None
-        try:
-            # Directory
-            if os.path.isdir(absolute_path):
-                _hash = 'DIR'
-            # File
-            else:
-                # Open the file and hash it using Dropbox python helpers
-                hasher = DropboxContentHasher()
-                if os.path.exists(absolute_path):
-                    duration = time.perf_counter()
-                    with open(absolute_path, 'rb') as f:
-                        while True:
-                            chunk = f.read(1024)  # or whatever chunk size you want
-                            if len(chunk) == 0:
-                                break
-                            hasher.update(chunk)
-                    _hash = hasher.hexdigest()
-                    logging.debug("Successfully computed hash of file (%.3f): %s" % (time.perf_counter() - duration, absolute_path))
-        except:
-            logging.exception("Error while hashing file %s" % absolute_path)
-        return _hash
+        return default_hash_function(absolute_path)
     
     def __init__(self, absolute_root_folder, hash_function=None, custom_intializing_values:dict=None):
         

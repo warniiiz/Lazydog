@@ -6,7 +6,37 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import hashlib
 import six
 
+import time
+import os
+import logging
 
+
+def default_hash_function(absolute_path:str):
+    _hash = None
+    try:
+        duration = time.perf_counter()
+        # Directory
+        if os.path.isdir(absolute_path):
+            _hash = 'DIR'
+        # File
+        else:
+            # Open the file and hash it using Dropbox python helpers
+            hasher = DropboxContentHasher()
+            with open(absolute_path, 'rb') as f:
+                while True:
+                    chunk = f.read(1024)  # or whatever chunk size you want
+                    if len(chunk) == 0:
+                        break
+                    hasher.update(chunk)
+            _hash = hasher.hexdigest()
+        logging.getLogger(__name__).debug("Successfully computed hash of file (%.3f): %s" % (time.perf_counter() - duration, absolute_path))
+    except:
+        logging.getLogger(__name__).exception("Error while hashing file %s" % absolute_path)
+    return _hash
+    
+    
+    
+    
 class DropboxContentHasher(object):
     """
     Computes a hash using the same algorithm that the Dropbox API uses for the
@@ -87,4 +117,9 @@ class DropboxContentHasher(object):
         c._block_hasher = self._block_hasher.copy()
         c._block_pos = self._block_pos
         return c
+    
+    
+            
+
+
 

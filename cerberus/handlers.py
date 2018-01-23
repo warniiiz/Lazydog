@@ -6,7 +6,7 @@ import time
 import datetime
 import threading
 
-from local_states import LocalState
+from states import LocalState
 from events import CerberusEvent
 from queues import DatedlocaleventQueue
 

@@ -5,7 +5,7 @@ import os
 
 
 
-from local_states import LocalState
+from states import LocalState
 from revised_watchdog.events import FileSystemEvent
 
 

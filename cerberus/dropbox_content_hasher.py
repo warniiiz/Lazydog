@@ -11,13 +11,13 @@ import os
 import logging
 
 
-def default_hash_function(absolute_path:str):
+def default_hash_function(absolute_path:str, default_directory_hash='DIR'):
     _hash = None
     try:
         duration = time.perf_counter()
         # Directory
         if os.path.isdir(absolute_path):
-            _hash = 'DIR'
+            _hash = default_directory_hash
         # File
         else:
             # Open the file and hash it using Dropbox python helpers

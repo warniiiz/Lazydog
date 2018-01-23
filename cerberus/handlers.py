@@ -253,6 +253,7 @@ class HighlevelEventHandler(threading.Thread):
                     if len(self.local_states.get_files_by_sizetime_key((copy_event_to_posttreat.file_size, copy_event_to_posttreat.file_mtime))) > 0:
                         self._block_releases_while_hashing = True
                         # the following command also transforms the created event into a copied one (if any src paths found)...
+                        # File Hash is computed.
                         copy_event_to_posttreat.add_source_paths_and_transforms_into_copied_event(self.local_states.get_files_by_hash_key(copy_event_to_posttreat.file_hash))
                         if copy_event_to_posttreat.is_copied_event():
                             self._copied_dir_list[os.path.dirname(copy_event_to_posttreat.to_path)] = datetime.datetime.now()
@@ -272,6 +273,7 @@ class HighlevelEventHandler(threading.Thread):
         elif event.is_moved_event():
             self.local_states.move(event.path, event.to_path)
         else:
+            # File Hash is computed if needed
             self.save_locals(event.ref_path, [event.file_hash, event.file_size, event.file_mtime])
         
                            
@@ -295,8 +297,9 @@ class HighlevelEventHandler(threading.Thread):
                 # clean erratic modified events
                 for e in ready_events.copy():
                     if e.is_modified_event():
-                        if ( e.file_hash == self.local_states.get_hash(e.path, create=False) and
-                            (e.file_size, e.file_mtime) == self.local_states.get_sizetime(e.path, create=False)):
+                        # File Hash is computed.
+                        if ( e.file_hash == self.local_states.get_hash(e.path, compute_if_none=False) and
+                            (e.file_size, e.file_mtime) == self.local_states.get_sizetime(e.path, compute_if_none=False)):
                             ready_events.remove(e)
                         else:
                             self._update_local_state(e)

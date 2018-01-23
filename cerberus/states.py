@@ -1,40 +1,109 @@
 
 import os
+from dropbox_content_hasher import default_hash_function
 
 
+
+class DualAccessMemory():
+    
+    def __init__(self):
+
+        # self.sizetimes is a dictionary with key=path, value=tuple(file_size, file_mtime)
+        self.memories = {}
+        self.memories.clear()
+        
+        # self.sizetime_paths is a dictionary with key=file_hash, values=list(file_path)
+        self.dual_memories = {}
+        self.dual_memories.clear()
+
+    def get(self, key):
+        return self.memories.get(key, None)
+    
+    def get_by_value(self, value):
+        return self.dual_memories.get(value, set())
+
+    def __getitem__(self, key):
+        return self.get(key)
+    
+    def __setitem__(self, key, value):
+        return self.save(key, value)
+
+    def __contains__(self, key):
+        return key in self.memories
+        
+    def _get_children(self, key:str):
+        complete_key = key if key.endswith('/') else key + '/'
+        children = [x for x in self.memories if x.startswith(complete_key)]
+        if key in self.memories:
+            children = children + [key]
+        return children
+
+    def save(self, key:str, value):
+        self.memories[key] = value
+        if self.dual_memories.get(self.memories[key]) is None:
+            self.dual_memories[self.memories[key]] = set()
+        self.dual_memories[self.memories[key]].update([key]) 
+    
+    # Delete key recursively
+    def delete(self, delete_key:str):
+        for key in self._get_children(delete_key):
+            if self.dual_memories.get(self.memories[key]) is not None:
+                self.dual_memories[self.memories[key]].discard(key) 
+            self.memories.pop(key)
+        
+    # Move key recursively
+    def move(self, src_key:str, dst_key:str):
+        for old_key in self._get_children(src_key):
+            new_key = old_key.replace(src_key, dst_key, 1)
+            if self.dual_memories.get(self.memories[old_key]) is not None:
+                self.dual_memories[self.memories[old_key]].discard(old_key) 
+                self.dual_memories[self.memories[old_key]].update([new_key]) 
+            self.memories[new_key] = self.memories.pop(old_key)
+            
+            
+    
+    
 
 
 class LocalState():
     
-    # Method to get the MD5 Hash of the file with the supplied file name.
-    @staticmethod
-    def _default_hashing_function(absolute_path:str):
-        from dropbox_content_hasher import default_hash_function 
-        return default_hash_function(absolute_path)
+    DEFAULT_DIRECTORY_VALUE = 'DIR'
     
-    def __init__(self, absolute_root_folder, hash_function=None, custom_intializing_values:dict=None):
+    # Default method to get the Hash of the file with the supplied file name.
+    @staticmethod
+    def _default_hashing_function(absolute_path:str): 
+        return default_hash_function(absolute_path, LocalState.DEFAULT_DIRECTORY_VALUE)
+    
+    # Following 3 methods can be used in other classes
+    def absolute_local_path(self, relative_path:str) -> str:
+        if relative_path.startswith('/'):
+            relative_path = relative_path[1:]
+        return os.path.join(self.absolute_root_folder, relative_path)
+    
+    def relative_local_path(self, absolute_path:str) -> str:
+        absolute_path = os.path.normpath(absolute_path)
+        return '/' + os.path.relpath(absolute_path, self.absolute_root_folder)
+    
+    def hash_function(self, *args, **kwargs):
+        return self._hash_function(*args, **kwargs)
+    
+    def __init__(self, absolute_root_folder, custom_hash_function=None, custom_intializing_values:dict=None):
         
         # keep absolute root folder
         self.absolute_root_folder = absolute_root_folder
         
         # keep hash function
-        self.hash_function = hash_function if hash_function is not None else self._default_hashing_function
+        self._hash_function = custom_hash_function if custom_hash_function is not None else LocalState._default_hashing_function
         
-        # self.hashes is a dictionary with key=file_path, value=file_hash
-        self.hashes = {}
-        self.hashes.clear()
+        # self.hashes is a dual access dictionary 
+        # self.hashes.get(key) with key=file_path returns the value=file_hash
+        # self.hashes.get_by_value(value) with value=file_hash returns a set of paths
+        self.hashes = DualAccessMemory()
         
-        # self.hash_paths is a dictionary with key=file_hash, values=list(file_path)
-        self.hash_paths = {}
-        self.hash_paths.clear()
-        
-        # self.sizetimes is a dictionary with key=path, value=tuple(file_size, file_mtime)
-        self.sizetimes = {}
-        self.sizetimes.clear()
-        
-        # self.sizetime_paths is a dictionary with key=file_hash, values=list(file_path)
-        self.sizetime_paths = {}
-        self.sizetime_paths.clear()
+        # self.sizetimes is a dual access dictionary 
+        # self.sizetimes.get(key) with key=file_path returns the value=tuple(file_size, file_mtime)
+        # self.sizetimes.get_by_value(value) with value=tuple(file_size, file_mtime) returns a set of paths
+        self.sizetimes = DualAccessMemory()
         
         # Initializing values
         if custom_intializing_values is not None:
@@ -45,108 +114,67 @@ class LocalState():
                 if os.path.exists(self.absolute_local_path(k)):
                     self.save(k, v[0], v[1], v[2])
         else:
+            
             # Default initializing
             for root, dirs, files in os.walk(self.absolute_root_folder):  
                 for i in dirs + files:
                     relative_path = self.relative_local_path(os.path.join(root, i))
                     self.get_hash(relative_path)
                     self.get_sizetime(relative_path)
-        
     
 
     
-    def absolute_local_path(self, relative_path:str) -> str:
-        if relative_path.startswith('/'):
-            relative_path = relative_path[1:]
-        return os.path.join(self.absolute_root_folder, relative_path)
-    
-    def relative_local_path(self, absolute_path:str) -> str:
-        absolute_path = os.path.normpath(absolute_path)
-        return '/' + os.path.relpath(absolute_path, self.absolute_root_folder)
-
-    def get_hash(self, key:str, create:bool=True) -> str:
-        if key not in self.hashes and create:
+    def get_hash(self, key:str, compute_if_none:bool=True) -> str:
+        if key not in self.hashes and compute_if_none:
             self.hashes[key] = self.hash_function(self.absolute_local_path(key))
-            if self.hash_paths.get(self.hashes[key]) is None:
-                self.hash_paths[self.hashes[key]] = set()
-            self.hash_paths[self.hashes[key]].update([key]) 
-        return self.hashes.get(key, None)
+        return self.hashes[key]
         
     def get_files_by_hash_key(self, hash_key:str) -> set:
-        return self.hash_paths.get(hash_key, set())
+        file_paths = self.hashes.get_by_value(hash_key)
+        return self._check_for_deleted_paths(file_paths)
 
-    def get_sizetime(self, key:str, create:bool=True):
-        if key not in self.sizetimes and create:
+    def get_sizetime(self, key:str, compute_if_none:bool=True):
+        if key not in self.sizetimes and compute_if_none:
             if os.path.isdir(self.absolute_local_path(key)):
-                self.sizetimes[key] = ('DIR', 'DIR')
+                self.sizetimes[key] = (LocalState.DEFAULT_DIRECTORY_VALUE, 
+                                       LocalState.DEFAULT_DIRECTORY_VALUE)
             else:
-                self.sizetimes[key] = (os.path.getsize(self.absolute_local_path(key)), os.path.getmtime(self.absolute_local_path(key)))
-            if self.sizetime_paths.get(self.sizetimes[key]) is None:
-                self.sizetime_paths[self.sizetimes[key]] = set()
-            self.sizetime_paths[self.sizetimes[key]].update([key]) 
-        return self.sizetimes.get(key, None)
+                self.sizetimes[key] = (os.path.getsize(self.absolute_local_path(key)), 
+                                       os.path.getmtime(self.absolute_local_path(key)))
+        return self.sizetimes[key]
         
     def get_files_by_sizetime_key(self, sizetime_key) -> set:
-        return self.sizetime_paths.get(sizetime_key, set())
+        file_paths = self.sizetimes.get_by_value(sizetime_key)
+        return self._check_for_deleted_paths(file_paths)
+    
+    def _check_for_deleted_paths(self, paths:set):
+        deleted_paths = [x for x in paths if not os.path.exists(self.absolute_local_path(x))]
+        for dp in deleted_paths:
+            self.hashes.delete(dp)
+            self.sizetimes.delete(dp)
+        return paths - deleted_paths
     
     def save(self, key:str, file_hash, file_size, file_mtime):
         if os.path.isdir(self.absolute_local_path(key)):
-            file_hash = 'DIR'
-            file_size = 'DIR'
-            file_mtime = 'DIR'
+            file_hash = LocalState.DEFAULT_DIRECTORY_VALUE
+            file_size = LocalState.DEFAULT_DIRECTORY_VALUE
+            file_mtime = LocalState.DEFAULT_DIRECTORY_VALUE
         self.hashes[key] = file_hash
-        if self.hash_paths.get(self.hashes[key]) is None:
-            self.hash_paths[self.hashes[key]] = set()
-        self.hash_paths[self.hashes[key]].update([key]) 
         self.sizetimes[key] = (file_size, file_mtime)
-        if self.sizetime_paths.get(self.sizetimes[key]) is None:
-            self.sizetime_paths[self.sizetimes[key]] = set()
-        self.sizetime_paths[self.sizetimes[key]].update([key])
     
     # Delete key recursively
     def delete(self, delete_key:str):
-        dk = delete_key + '/'
-        for key in [x for x in self.hashes.copy() if x.startswith(dk)]:
-            self._delete_hash(key)
-        if delete_key in self.hashes:
-            self._delete_hash(delete_key)
-        for key in [x for x in self.sizetimes.copy() if x.startswith(dk)]:
-            self._delete_sizetime(key)
-        if delete_key in self.sizetimes:
-            self._delete_sizetime(delete_key)
+        self.hashes.delete(delete_key)
+        self.sizetimes.delete(delete_key)
     
-    def _delete_hash(self, key:str):
-        if self.hash_paths.get(self.hashes[key]) is not None:
-            self.hash_paths[self.hashes[key]].discard(key) 
-        self.hashes.pop(key)
-        
-    def _delete_sizetime(self, key:str):
-        if self.sizetime_paths.get(self.sizetimes[key], None) is not None:
-            self.sizetime_paths[self.sizetimes[key]].discard(key) 
-        self.sizetimes.pop(key) 
-        
     # Move key recursively
     def move(self, src_key:str, dst_key:str):
-        mk = src_key + '/'
-        for key in [x for x in self.hashes.copy() if x.startswith(mk)]:
-            self._move_hash(key, key.replace(src_key, dst_key, 1))
-        if src_key in self.hashes:
-            self._move_hash(src_key, dst_key)
-        for key in [x for x in self.sizetimes.copy() if x.startswith(mk)]:
-            self._move_sizetime(key, key.replace(src_key, dst_key, 1))
-        if src_key in self.sizetimes:
-            self._move_sizetime(src_key, dst_key)
-        
-    def _move_hash(self, src_key:str, dst_key:str):
-        if self.hash_paths.get(self.hashes[src_key]) is not None:
-            self.hash_paths[self.hashes[src_key]].discard(src_key) 
-            self.hash_paths[self.hashes[src_key]].update([dst_key]) 
-        self.hashes[dst_key] = self.hashes.pop(src_key)
-        
-    def _move_sizetime(self, src_key:str, dst_key:str):
-        if self.sizetime_paths.get(self.sizetimes[src_key]) is not None:
-            self.sizetime_paths[self.sizetimes[src_key]].discard(src_key) 
-            self.sizetime_paths[self.sizetimes[src_key]].update([dst_key]) 
-        self.sizetimes[dst_key] = self.sizetimes.pop(src_key)
+        self.hashes.delete(src_key, dst_key)
+        self.sizetimes.delete(src_key, dst_key)
             
+    
+    
+    
+    
+    
     

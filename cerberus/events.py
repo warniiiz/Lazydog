@@ -271,6 +271,8 @@ class CerberusEvent():
                 self._file_hash = 'DIR'
             else:
                 try:
+                    # Here we don't use local_states which is considered as historic value of hash. 
+                    # We need to compute new hash value (to be able to compare it to historic one)
                     self._file_hash = self.local_states.hash_function(self.absolute_ref_path)
                 except:
                     self._file_hash = None

@@ -1,6 +1,6 @@
 
 
-from local_states import LocalState
+from states import LocalState
 from events import CerberusEvent
 from revised_watchdog.events import FileSystemEventHandler
 

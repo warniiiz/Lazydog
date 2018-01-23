@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# Copyright 2018 Clément Warneys <clement.warneys@gmail.com>
-# Copyright 2012 Google, Inc.
+# Copyright 2018 ClÃ©ment Warneys <clement.warneys@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.

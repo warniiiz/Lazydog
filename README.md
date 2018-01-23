@@ -104,3 +104,27 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 When finished, please see http://pandoc.org/ to convert from .md to .rst and include it to setup.py file.
 
 
+
+# Configuration of inotify...
+
+
+
+===============================================================================
+Listen uses inotify by default on Linux to monitor directories for changes. It's not uncommon to encounter a system limit on the number of files you can monitor. For example, Ubuntu Lucid's (64bit) inotify limit is set to 8192.
+ 
+You can get your current inotify file watch limit by executing:
+ 
+$ cat /proc/sys/fs/inotify/max_user_watches
+When this limit is not enough to monitor all files inside a directory, the limit must be increased for Listen to work properly.
+ 
+You can set a new limit temporary with:
+ 
+$ sudo sysctl fs.inotify.max_user_watches=524288
+$ sudo sysctl -p
+If you like to make your limit permanent, use:
+ 
+$ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
+$ sudo sysctl -p
+
+
+

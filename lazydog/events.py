@@ -10,7 +10,7 @@ from revised_watchdog.events import FileSystemEvent
 
 
 
-class CerberusEvent():
+class LazydogEvent():
 
     EVENT_TYPE_COPIED = 'copied'
     EVENT_TYPE_CREATED = 'created'
@@ -154,19 +154,19 @@ class CerberusEvent():
         return self.type == event.type
     
     def is_moved_event(self) -> bool:
-        return self.type == CerberusEvent.EVENT_TYPE_MOVED
+        return self.type == LazydogEvent.EVENT_TYPE_MOVED
     
     def is_dir_moved_event(self) -> bool:
         return self.is_moved_event() and self.is_directory()
     
     def is_deleted_event(self) -> bool:
-        return self.type == CerberusEvent.EVENT_TYPE_DELETED
+        return self.type == LazydogEvent.EVENT_TYPE_DELETED
     
     def is_dir_deleted_event(self) -> bool:
         return self.is_deleted_event() and self.is_directory()
     
     def is_created_event(self) -> bool:
-        return self.type == CerberusEvent.EVENT_TYPE_CREATED
+        return self.type == LazydogEvent.EVENT_TYPE_CREATED
     
     def is_dir_created_event(self) -> bool:
         return self.is_created_event() and self.is_directory()
@@ -175,16 +175,16 @@ class CerberusEvent():
         return self.is_created_event() and not self.is_directory()
     
     def is_copied_event(self) -> bool:
-        return self.type == CerberusEvent.EVENT_TYPE_COPIED
+        return self.type == LazydogEvent.EVENT_TYPE_COPIED
     
     def is_modified_event(self) -> bool:
         return self.is_meta_modified_event() or self.is_data_modified_event()
     
     def is_meta_modified_event(self) -> bool:
-        return self.type == CerberusEvent.EVENT_TYPE_M_MODIFIED
+        return self.type == LazydogEvent.EVENT_TYPE_M_MODIFIED
     
     def is_data_modified_event(self) -> bool:
-        return self.type == CerberusEvent.EVENT_TYPE_C_MODIFIED 
+        return self.type == LazydogEvent.EVENT_TYPE_C_MODIFIED 
     
     def is_file_modified_event(self) -> bool:
         return self.is_modified_event() and not self.is_directory()
@@ -235,7 +235,7 @@ class CerberusEvent():
     
     @staticmethod
     def p1_comes_before_p2(p1:str, p2:str) -> bool:
-        return CerberusEvent.p1_comes_after_p2(p2, p1)
+        return LazydogEvent.p1_comes_after_p2(p2, p1)
     
     
     def comes_before(self, event) -> bool:
@@ -249,9 +249,9 @@ class CerberusEvent():
     
     def comes_after(self, event, complete_check:bool=True) -> bool:
         if complete_check and self.has_dest() and event.has_dest():
-            return CerberusEvent.p1_comes_after_p2(self.path, event.path) and CerberusEvent.p1_comes_after_p2(self.to_path, event.to_path)
+            return LazydogEvent.p1_comes_after_p2(self.path, event.path) and LazydogEvent.p1_comes_after_p2(self.to_path, event.to_path)
         else:
-            return CerberusEvent.p1_comes_after_p2(self.ref_path, event.ref_path)
+            return LazydogEvent.p1_comes_after_p2(self.ref_path, event.ref_path)
         
     def same_or_comes_after(self, event) -> bool:
         return self.comes_after(event) or self.has_same_path_than(event)
@@ -262,7 +262,7 @@ class CerberusEvent():
         return datetime.datetime.now() - dt
     
     def idle_time(self) -> datetime.datetime:
-        return CerberusEvent.datetime_difference_from_now(self.latest_reworked_date)
+        return LazydogEvent.datetime_difference_from_now(self.latest_reworked_date)
                                                       
     @property
     def file_hash(self) -> str:
@@ -298,7 +298,7 @@ class CerberusEvent():
     @property
     def dir_files_qty(self) -> int:
         if self._dir_files_qty is None and self.is_directory():
-            self._dir_files_qty = CerberusEvent.count_files_in(self.absolute_ref_path)
+            self._dir_files_qty = LazydogEvent.count_files_in(self.absolute_ref_path)
         return self._dir_files_qty
     
     @staticmethod
@@ -312,7 +312,7 @@ class CerberusEvent():
     @property
     def file_size(self) -> int:
         if self._file_size is None and not self.is_directory():
-            self._file_size = CerberusEvent.get_file_size(self.absolute_ref_path)
+            self._file_size = LazydogEvent.get_file_size(self.absolute_ref_path)
         return self._file_size
     
     def is_empty(self) -> bool:
@@ -390,7 +390,7 @@ class CerberusEvent():
     def add_source_paths_and_transforms_into_copied_event(self, src_paths:set):
         for sp in src_paths:
             if not self.is_copied_event():
-                self.type = CerberusEvent.EVENT_TYPE_COPIED
+                self.type = LazydogEvent.EVENT_TYPE_COPIED
                 self.to_path = self.path
                 self.path = sp
             if os.path.basename(sp) == os.path.basename(self.to_path):
@@ -398,7 +398,7 @@ class CerberusEvent():
             
             
     def transforms_created_into_moved_event(self, upper_moved_event):
-        self.type = CerberusEvent.EVENT_TYPE_MOVED
+        self.type = LazydogEvent.EVENT_TYPE_MOVED
         self.to_path = self.ref_path
         self.path = os.path.join(upper_moved_event.path, self.basename)
         # update for high-level

@@ -17,7 +17,7 @@ from watchdog.observers.inotify_c import (
 class Inotify(Inotify):
     """
     Linux inotify(7) API wrapper class. With modified read_events method, 
-    and added _remove_watch_bookkeeping method, thus covering specifics needs of cerberus
+    and added _remove_watch_bookkeeping method, thus covering specifics needs of lazydog
 
     :param path:
         The directory path for which we want an inotify object.

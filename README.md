@@ -11,9 +11,9 @@ This file should contain the following pieces of information:
 * A list of non-Python dependencies (if any) and how to install them
 
 
-# Project Title
+# Lazydog
 
-One Paragraph of project description goes here
+Python module monitoring high-level file system events (Copy, Move, Create, Delete, Modify). Lazydog tries to aggregate low-level events in order to emit a minimum number of high-level events. Lazydog uses python Watchdog module to detect low-level events.
 
 ## Getting Started
 

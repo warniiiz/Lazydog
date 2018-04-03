@@ -13,7 +13,7 @@ import codecs
 import os
 import sys
 
-import cerberus
+import lazydog
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -41,9 +41,9 @@ class PyTest(TestCommand):
         sys.exit(errcode)
 
 setup(
-    name='cerberus',
-    version=cerberus.__version__,
-    url='http://github.com/warniiiz/cerberus/',
+    name='lazydog',
+    version=lazydog.__version__,
+    url='http://github.com/warniiiz/lazydog/',
     license='Apache Software License',
     author='Clément Warneys',
     tests_require=['pytest'],
@@ -59,10 +59,10 @@ setup(
     author_email='clement.warneys@gmail.com',
     description='High-level disk event observer',
     long_description=long_description,
-    packages=['cerberus'],
+    packages=['lazydog'],
     include_package_data=True,
     platforms='any',
-    test_suite='cerberus.test.test_cerberus',
+    test_suite='lazydog.test.test_lazydog',
     classifiers = [
         'Programming Language :: Python',
         'Development Status :: 4 - Beta',
@@ -76,7 +76,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         ],
     entry_points = {
-        'console_scripts': ['cerberus=cerberus.cerberus:main'],
+        'console_scripts': ['lazydog=lazydog.lazydog:main'],
     },
     extras_require={
         'testing': ['pytest'],

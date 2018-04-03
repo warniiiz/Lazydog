@@ -51,7 +51,7 @@ class FileSystemEventHandler(FileSystemEventHandler):
     """
     Base file system event handler that you can override methods from.
     With modified dispatch method, added on_xxxx_modified methods,
-    thus covering specific needs of cerberus.
+    thus covering specific needs of lazydog.
     """
 
     def dispatch(self, event):

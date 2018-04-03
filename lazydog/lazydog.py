@@ -58,7 +58,7 @@ def logging_in_console(directory:str=''):
 
 
 
-# this function is the one called when calling '$ cerberus' in the console.
+# this function is the one called when calling '$ lazydog' in the console.
 def main():
     
     import sys

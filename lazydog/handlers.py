@@ -7,7 +7,7 @@ import datetime
 import threading
 
 from states import LocalState
-from events import CerberusEvent
+from events import LazydogEvent
 from queues import DatedlocaleventQueue
 
 from revised_watchdog.observers.inotify import InotifyObserver
@@ -114,7 +114,7 @@ class HighlevelEventHandler(threading.Thread):
         
         # Cleaning...
         for k, t in self._copied_dir_list.items():
-            if datetime.datetime.now() - t > CerberusEvent.COPY_AGGREGATION_TIME_LIMIT:
+            if datetime.datetime.now() - t > LazydogEvent.COPY_AGGREGATION_TIME_LIMIT:
                 self._copied_dir_list.pop(k)
         
         to_paths = {}
@@ -136,10 +136,10 @@ class HighlevelEventHandler(threading.Thread):
             if e.is_empty():
                 for parent_sp in to_paths[e.parent_rp]:
                     absolute_source_path = self.local_states.absolute_local_path(os.path.join(parent_sp, e.basename))
-                    if e.is_directory() and CerberusEvent.count_files_in(absolute_source_path) == 0:
+                    if e.is_directory() and LazydogEvent.count_files_in(absolute_source_path) == 0:
                         if HighlevelEventHandler._check_empty_src_dest_folder(absolute_source_path, e.absolute_ref_path):
                             to_paths[e.parent_rp][parent_sp].append(e)
-                    elif not e.is_directory() and CerberusEvent.get_file_size(absolute_source_path) == 0:
+                    elif not e.is_directory() and LazydogEvent.get_file_size(absolute_source_path) == 0:
                         to_paths[e.parent_rp][parent_sp].append(e)
         
         # Then we check if any created folder event corresponds to the parent_to_paths
@@ -187,7 +187,7 @@ class HighlevelEventHandler(threading.Thread):
         
         
                         
-    def posttreat_lowlevel_event(self, local_event:CerberusEvent):
+    def posttreat_lowlevel_event(self, local_event:LazydogEvent):
         
         # posttreat file copy
         copy_event_to_posttreat = None
@@ -267,7 +267,7 @@ class HighlevelEventHandler(threading.Thread):
         self._update_posttreatment_cursor()
             
                         
-    def _update_local_state(self, event:CerberusEvent):
+    def _update_local_state(self, event:LazydogEvent):
         if event.is_deleted_event():
             self.local_states.delete(event.ref_path)
         elif event.is_moved_event():
@@ -283,7 +283,7 @@ class HighlevelEventHandler(threading.Thread):
     
     def get_available_events(self) -> list:
         ready_events = []
-        if not self._block_releases_while_hashing and CerberusEvent.datetime_difference_from_now(self._latest_highlevel_posttreatment) > HighlevelEventHandler.POSTTREATMENT_TIME_LIMIT:
+        if not self._block_releases_while_hashing and LazydogEvent.datetime_difference_from_now(self._latest_highlevel_posttreatment) > HighlevelEventHandler.POSTTREATMENT_TIME_LIMIT:
 
             if all(x.idle_time() > HighlevelEventHandler.POSTTREATMENT_TIME_LIMIT for x in self.events_list):
                 

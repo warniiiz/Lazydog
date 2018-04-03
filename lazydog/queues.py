@@ -1,7 +1,7 @@
 
 
 from states import LocalState
-from events import CerberusEvent
+from events import LazydogEvent
 from revised_watchdog.events import FileSystemEventHandler
 
 
@@ -23,7 +23,7 @@ class DatedlocaleventQueue(FileSystemEventHandler):
             :class:`FileSystemEvent`
         """
         super(DatedlocaleventQueue, self).on_any_event(event)
-        self.events_list.append(CerberusEvent(event, self.local_states))
+        self.events_list.append(LazydogEvent(event, self.local_states))
 
     def next(self):
         return self.events_list.pop(0) if not self.is_empty() else None

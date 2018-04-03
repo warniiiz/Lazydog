@@ -26,7 +26,7 @@ from ..events import (
 class InotifyEmitter(InotifyEmitter):
     """
     inotify(7)-based event emitter. With modified queue_events method, 
-    covering specific needs of cerberus
+    covering specific needs of lazydog
 
     :param event_queue:
         The event queue to fill with events.

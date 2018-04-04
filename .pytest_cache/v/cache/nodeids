@@ -1,0 +1,4 @@
+[
+  "lazydog/test/test_queues.py::test_instanciate_tested_queue",
+  "lazydog/test/test_queues.py::test_DatedlocaleventQueue"
+]

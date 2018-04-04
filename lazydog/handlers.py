@@ -122,7 +122,7 @@ class HighlevelEventHandler(threading.Thread):
         # General idea is to identify if all the file from a same source folder have 
         # each of them generated copied_events to the same destination folder
          
-        # Count parent_to_path and associated parent_src_path
+        # For each parent_to_path, get the possible parent_src_paths
         for e in [x for x in self.events_list if x.is_copied_event() and x.parent_rp in self._copied_dir_list]:
             if not e.parent_rp in to_paths:
                 to_paths[e.parent_rp] = {}
@@ -131,55 +131,61 @@ class HighlevelEventHandler(threading.Thread):
                     to_paths[e.parent_rp][parent_sp] = []
                 to_paths[e.parent_rp][parent_sp].append(e)
         
-        # Then we add potential empty folders that have been copied but not transformed (because no file inside)
+        # Then, we add potential empty folders that have been copied but not transformed into copied event (because no file inside)
         for e in [x for x in self.events_list if x.is_created_event() and x.parent_rp in to_paths]:
             if e.is_empty():
                 for parent_sp in to_paths[e.parent_rp]:
                     absolute_source_path = self.local_states.absolute_local_path(os.path.join(parent_sp, e.basename))
+                    # if directory does not exist, count_files_in returns None
                     if e.is_directory() and LazydogEvent.count_files_in(absolute_source_path) == 0:
                         if HighlevelEventHandler._check_empty_src_dest_folder(absolute_source_path, e.absolute_ref_path):
                             to_paths[e.parent_rp][parent_sp].append(e)
+                    # if file does not exist, get_file_size returns None
                     elif not e.is_directory() and LazydogEvent.get_file_size(absolute_source_path) == 0:
                         to_paths[e.parent_rp][parent_sp].append(e)
         
-        # Then we check if any created folder event corresponds to the parent_to_paths
+        # Then, we check if any created folder event corresponds to the parent_to_paths
         recurse = False
         for tp in to_paths:
             dir_created_event = next(iter([x for x in self.events_list if x.is_dir_created_event() and x.ref_path == tp]), None)
-            for sp in to_paths[tp]:
+            #for sp in to_paths[tp]:
+            potential_sp = [x for x in to_paths[tp] 
+                 if (len(to_paths[tp][x]) == HighlevelEventHandler._len_list_dir(self.local_states.absolute_local_path(x)) and 
+                     len(to_paths[tp][x]) == HighlevelEventHandler._len_list_dir(self.local_states.absolute_local_path(tp)))]
+            for sp in potential_sp:
                 #logging.debug("Posttreating copied folder: %s - %s - %s", len(to_paths[tp][sp]), HighlevelEventHandler._len_list_dir(sp), HighlevelEventHandler._len_list_dir(tp))
-                if (len(to_paths[tp][sp]) == HighlevelEventHandler._len_list_dir(self.local_states.absolute_local_path(sp)) and 
-                    len(to_paths[tp][sp]) == HighlevelEventHandler._len_list_dir(self.local_states.absolute_local_path(tp))):
+                #if (len(to_paths[tp][sp]) == HighlevelEventHandler._len_list_dir(self.local_states.absolute_local_path(sp)) and 
+                #    len(to_paths[tp][sp]) == HighlevelEventHandler._len_list_dir(self.local_states.absolute_local_path(tp))):
                     # merging the copied files under a copied folder
                     # only the first iteration will remain a created_event, following one will have been transformed into copied event
-                    if dir_created_event is not None:
-                        # once transformed into copied event, the following will not be applied
-                        if dir_created_event.is_created_event():
-                            # at the end we will posttreat the parent folder
-                            recurse = True
-                            self._copied_dir_list[os.path.dirname(tp)] = datetime.datetime.now()
-                            # for now remove any related event
-                            for e in to_paths[tp][sp]:
-                                # if still not transformed : means it is empty file or folder
-                                if e.is_created_event():
-                                    # for all empty subfolders and files, update e, then remove them:
-                                    for ee in [x for x in self.events_list if x.is_created_event() and x.comes_after(e) and x.is_empty()]:
-                                        ee.update_main_event(e)
-                                        self._update_local_state(ee)
-                                        self.events_list.remove(ee)
-                                # add source (and transforms) 
-                                e.add_source_paths_and_transforms_into_copied_event(set([os.path.join(sp, e.basename)]))
-                                # update main and remove
-                                if e in self.events_list:
-                                    e.update_main_event(dir_created_event)
-                                    self._update_local_state(e)
-                                    self.events_list.remove(e)
-                            # remove folder from potentially copied... since it will be effectively transformed
-                            self._copied_dir_list.pop(tp)
-                            self._update_local_state(dir_created_event)
-                        # transform main event
-                        dir_created_event.add_source_paths_and_transforms_into_copied_event(set([sp]))
-                        self._update_posttreatment_cursor()
+                if dir_created_event is not None:
+                    # once transformed into copied event, the following will not be applied
+                    if dir_created_event.is_created_event():
+                        # at the end we will posttreat the parent folder
+                        recurse = True
+                        self._copied_dir_list[os.path.dirname(tp)] = datetime.datetime.now()
+                        # for now remove any related event
+                        for e in to_paths[tp][sp]:
+                            # if still not transformed : means it is empty file or folder
+                            if e.is_created_event():
+                                # for all empty subfolders and files, update e, then remove them:
+                                for ee in [x for x in self.events_list if x.is_created_event() and x.comes_after(e) and x.is_empty()]:
+                                    ee.update_main_event(e)
+                                    self._update_local_state(ee)
+                                    self.events_list.remove(ee)
+                            # add source (and transforms) 
+                            e.add_source_paths_and_transforms_into_copied_event(set([os.path.join(sp, e.basename)]))
+                            # update main and remove
+                            if e in self.events_list:
+                                e.update_main_event(dir_created_event)
+                                self._update_local_state(e)
+                                self.events_list.remove(e)
+                        # remove folder from potentially copied... since it will be effectively transformed
+                        self._copied_dir_list.pop(tp)
+                        self._update_local_state(dir_created_event)
+                    # transform main event
+                    dir_created_event.add_source_paths_and_transforms_into_copied_event(potential_sp)
+                    self._update_posttreatment_cursor()
                     
         # if any event has been transformed to copied event:
         if recurse:
@@ -189,7 +195,7 @@ class HighlevelEventHandler(threading.Thread):
                         
     def posttreat_lowlevel_event(self, local_event:LazydogEvent):
         
-        # posttreat file copy
+        # posttreat file copy is done at the end of this method
         copy_event_to_posttreat = None
         
         # created events
@@ -199,7 +205,7 @@ class HighlevelEventHandler(threading.Thread):
         # deleted events arrive backward
         if local_event.is_deleted_event():
             for e in [x for x in reversed(self.events_list) if x.is_deleted_event() and x.is_aggregable_with(local_event)]:
-                if local_event.comes_before(e):
+                if local_event.same_or_comes_before(e):
                     e.update_main_event(local_event)
                     self.events_list.remove(e)
                     local_event.is_related = False
@@ -229,20 +235,24 @@ class HighlevelEventHandler(threading.Thread):
         
         # modified event
         if local_event.is_modified_event():
+            # we do not need notification for modified folder
             if local_event.is_directory():
                 local_event.is_related = True
             else:
                 for e in [x for x in reversed(self.events_list) if x.is_aggregable_with(local_event)]:
+                    # modified file event related to deleted, moved or copied event
                     if e.is_deleted_event() or e.is_moved_event() or e.is_copied_event():
                         if local_event.same_or_comes_after(e):
                             local_event.update_main_event(e)
+                    # modified file event related to creted or modified event
                     elif e.is_created_event() or e.is_modified_event():
                         if local_event.has_same_path_than(e):
                             local_event.update_main_event(e)
+                            # in case of lastly created event, we re-check for potential copied event
                             if e.is_created_event() and local_event.is_meta_file_modified_event():
                                 copy_event_to_posttreat = e
         
-        # else...
+        # else... if event has no relation with previous ones, we add it in the list of potential high level event
         if not local_event.is_related:
             self.events_list.append(local_event)
                 
@@ -264,6 +274,7 @@ class HighlevelEventHandler(threading.Thread):
         # then posttreat dir copied event
         self._posttreat_copied_folder()
         
+        # posttreatment cursor temporizes the delivrances of high level event to observers
         self._update_posttreatment_cursor()
             
                         

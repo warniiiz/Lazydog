@@ -280,6 +280,7 @@ class LazydogEvent():
     
               
     # Count all files in subfolder, when file size > 0
+    # Returns None if folder does not exist
     @staticmethod
     def count_files_in(absolute_dir_path:str) -> int:
         qty = None
@@ -385,14 +386,19 @@ class LazydogEvent():
                 return True
         return False
     
-    
-            
+    # looking for the most probable source aamong a list of potential sources, based on the basename of the destination file or folder
+    def get_most_potential_source(self, src_paths:set, dest_path:str) -> str:
+        most_potential_sources = [x for x in src_paths if os.path.splitext(os.path.basename(x))[0] in os.path.splitext(os.path.basename(dest_path))[0]]
+        most_potential_sources.sort(key = lambda x: -len(x))
+        return most_potential_sources[0] if most_potential_sources is not None else next(iter(src_paths))
+
     def add_source_paths_and_transforms_into_copied_event(self, src_paths:set):
         for sp in src_paths:
             if not self.is_copied_event():
                 self.type = LazydogEvent.EVENT_TYPE_COPIED
                 self.to_path = self.path
-                self.path = sp
+                self.path = self.get_most_potential_source(src_paths, self.to_path)
+            # save all potential parent source path, for future use
             if os.path.basename(sp) == os.path.basename(self.to_path):
                 self.possible_src_paths[sp] = os.path.dirname(sp) if sp != '/' else None
             

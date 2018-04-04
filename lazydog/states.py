@@ -1,4 +1,6 @@
 
+
+
 import os
 from dropbox_content_hasher import default_hash_function
 
@@ -152,7 +154,7 @@ class LocalState():
         for dp in deleted_paths:
             self.hashes.delete(dp)
             self.sizetimes.delete(dp)
-        return paths - deleted_paths
+        return paths - set(deleted_paths)
     
     def save(self, key:str, file_hash, file_size, file_mtime):
         if os.path.isdir(self.absolute_local_path(key)):
@@ -169,8 +171,8 @@ class LocalState():
     
     # Move key recursively
     def move(self, src_key:str, dst_key:str):
-        self.hashes.delete(src_key, dst_key)
-        self.sizetimes.delete(src_key, dst_key)
+        self.hashes.move(src_key, dst_key)
+        self.sizetimes.move(src_key, dst_key)
             
     
     

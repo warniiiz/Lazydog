@@ -10,18 +10,20 @@ class DualAccessMemory():
     
     def __init__(self):
 
-        # self.sizetimes is a dictionary with key=path, value=tuple(file_size, file_mtime)
+        # self.memories is a dictionary with unique keys and possible same values
+        # note that this class has been designed for keys that should be a string containing a path
         self.memories = {}
         self.memories.clear()
         
-        # self.sizetime_paths is a dictionary with key=file_hash, values=list(file_path)
+        # self.dual_memories is a dictionary where the keys are each possible value of self.memories, 
+        # and the values are the lists of the associated keys.
         self.dual_memories = {}
         self.dual_memories.clear()
 
     def get(self, key):
         return self.memories.get(key, None)
     
-    def get_by_value(self, value):
+    def get_by_value(self, value) -> set:
         return self.dual_memories.get(value, set())
 
     def __getitem__(self, key):
@@ -41,6 +43,8 @@ class DualAccessMemory():
         return children
 
     def save(self, key:str, value):
+        if key in self:
+            self.dual_memories[self.memories[key]].discard(key)
         self.memories[key] = value
         if self.dual_memories.get(self.memories[key]) is None:
             self.dual_memories[self.memories[key]] = set()
@@ -57,6 +61,8 @@ class DualAccessMemory():
     def move(self, src_key:str, dst_key:str):
         for old_key in self._get_children(src_key):
             new_key = old_key.replace(src_key, dst_key, 1)
+            if new_key in self:
+                self.dual_memories[self.memories[new_key]].discard(new_key)
             if self.dual_memories.get(self.memories[old_key]) is not None:
                 self.dual_memories[self.memories[old_key]].discard(old_key) 
                 self.dual_memories[self.memories[old_key]].update([new_key]) 
@@ -140,7 +146,7 @@ class LocalState():
             if os.path.isdir(self.absolute_local_path(key)):
                 self.sizetimes[key] = (LocalState.DEFAULT_DIRECTORY_VALUE, 
                                        LocalState.DEFAULT_DIRECTORY_VALUE)
-            else:
+            elif os.path.exists(self.absolute_local_path(key)):
                 self.sizetimes[key] = (os.path.getsize(self.absolute_local_path(key)), 
                                        os.path.getmtime(self.absolute_local_path(key)))
         return self.sizetimes[key]

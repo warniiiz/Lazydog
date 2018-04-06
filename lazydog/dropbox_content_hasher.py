@@ -19,7 +19,7 @@ def default_hash_function(absolute_path:str, default_directory_hash='DIR'):
         if os.path.isdir(absolute_path):
             _hash = default_directory_hash
         # File
-        else:
+        elif os.path.exists(absolute_path):
             # Open the file and hash it using Dropbox python helpers
             hasher = DropboxContentHasher()
             with open(absolute_path, 'rb') as f:

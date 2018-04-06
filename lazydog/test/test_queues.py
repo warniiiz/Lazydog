@@ -3,6 +3,7 @@ import sys
 import os
 import time
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 from queues import DatedlocaleventQueue
 from states import LocalState
 from revised_watchdog.observers.inotify import InotifyObserver
@@ -37,7 +38,8 @@ def test_DatedlocaleventQueue():
     os.system('touch ' + TEST_DIR + '/test.txt')
 
     # Checking result - 3 new events during the tests
-    time.sleep(1)
+    time.sleep(0.1)
+    time.sleep(0.1)
     assert TESTED_QUEUE.size() > 0
     assert not TESTED_QUEUE.is_empty() 
 
@@ -47,7 +49,7 @@ def test_DatedlocaleventQueue():
 
     # Checking emptyness of the queue
     assert TESTED_QUEUE.is_empty() 
-    
+
 
 
 

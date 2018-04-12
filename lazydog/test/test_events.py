@@ -58,8 +58,8 @@ def delete_file(filename:str):
         if os.path.isdir(TEST_DIR + filename):
             os.rmdir(TEST_DIR + filename)
         else:
-            os.delete(TEST_DIR + filename)
-    except FileNotFound:
+            os.remove(TEST_DIR + filename)
+    except FileNotFoundError:
         pass
 
 
@@ -203,7 +203,7 @@ def test_LDE_basics_4():
     assert LE.path == file1name
     assert LE.to_path == file2name
     assert LE.ref_path == LE.to_path
-    assert not LE.has_dest()
+    assert LE.has_dest()
     assert LE.parent_rp == '/'
     assert LE.basename == 'file2.txt'
     assert LE.absolute_ref_path == TEST_DIR + LE.ref_path
@@ -231,7 +231,7 @@ def test_LDE_basics_4():
     assert LE.has_same_mtime_than(LE)
     assert LE.has_same_size_than(LE)
     assert LE.has_same_path_than(LE)
-    assert LE.has_same_src_path_than(LE)
+    assert not LE.has_same_src_path_than(LE) # comparing source path of LE against ref_path of LE...
     assert LE.file_hash == '71e9c373a6282c8ab2db54bff41ac99a0188fd22cfd6f10848ed211d61dbb481'
     assert LE.dir_files_qty is None
     assert LE.file_size == 6
@@ -300,7 +300,7 @@ def test_LDE_complex_1():
 
 # _get_most_potential_source
 def test_LDE_complex_2():
-    set_of_paths = set('/file1.txt', '/file2.txt', '/dir1/file3.txt', '/dir2/file 3.txt')
+    set_of_paths = set(['/file1.txt', '/file2.txt', '/dir1/file3.txt', '/dir2/file 3.txt'])
     assert LazydogEvent._get_most_potential_source(set_of_paths, '/copy-dir/copy of file3.txt') == '/dir1/file3.txt'
     assert LazydogEvent._get_most_potential_source(set_of_paths, '/copy-dir/copy of file 3.txt') == '/dir2/file 3.txt'
     assert LazydogEvent._get_most_potential_source(set_of_paths, '/file2 copy.txt') == '/file2.txt'
@@ -324,15 +324,15 @@ def test_LDE_complex_3():
     assert created_LE.path == file2name
     assert not created_LE.has_dest()
     # transformation
-    created_LE.add_source_paths_and_transforms_into_copied_event(set(file1name))
+    created_LE.add_source_paths_and_transforms_into_copied_event(file1name)
     copied_LE = created_LE
     # assertions after transformation
     assert copied_LE.is_copied_event()
     assert not copied_LE.is_directory()
     assert copied_LE.ref_path == file2name
-    assert created_LE.has_dest()
+    assert copied_LE.has_dest()
     assert copied_LE.path == file1name
-    assert len(self.possible_src_paths) == 0
+    assert len(copied_LE.possible_src_paths) == 0
 
 # add_source_paths_and_transforms_into_copied_event
 def test_LDE_complex_3_bis():
@@ -352,12 +352,12 @@ def test_LDE_complex_3_bis():
     assert created_LE.is_created_event()
     assert created_LE.path == file2name
     # transformation
-    created_LE.add_source_paths_and_transforms_into_copied_event(set(file1name))
+    created_LE.add_source_paths_and_transforms_into_copied_event(file1name)
     copied_LE = created_LE
     # assertions after transformation
     assert copied_LE.is_copied_event()
     assert copied_LE.ref_path == file2name
     assert copied_LE.path == file1name
-    assert len(self.possible_src_paths) == 1
+    assert len(copied_LE.possible_src_paths) == 1
    
 

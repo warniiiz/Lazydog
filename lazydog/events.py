@@ -357,9 +357,11 @@ class LazydogEvent():
     def _get_most_potential_source(src_paths:set, dest_path:str) -> str:
         most_potential_sources = [x for x in src_paths if os.path.splitext(os.path.basename(x))[0] in os.path.splitext(os.path.basename(dest_path))[0]]
         most_potential_sources.sort(key = lambda x: -len(x))
-        return most_potential_sources[0] if most_potential_sources is not None else next(iter(src_paths))
+        return most_potential_sources[0] if most_potential_sources else next(iter(src_paths))
 
     def add_source_paths_and_transforms_into_copied_event(self, src_paths:set):
+        if src_paths.__class__.__name__ == str.__name__:
+            src_paths = set([src_paths])
         for sp in src_paths:
             if not self.is_copied_event():
                 self.type = LazydogEvent.EVENT_TYPE_COPIED

@@ -1,13 +1,9 @@
+
 import datetime
 import os
 
-
-
-
-
 from states import LocalState
 from revised_watchdog.events import FileSystemEvent
-
 
 
 class LazydogEvent():
@@ -18,31 +14,13 @@ class LazydogEvent():
     EVENT_TYPE_MOVED = 'moved'
     EVENT_TYPE_C_MODIFIED = 'modified' # content modification
     EVENT_TYPE_M_MODIFIED = 'metadata' # metadata modification
-    
-                
-    # class datetime.timedelta(days=0, seconds=0, microseconds=0, milliseconds=0, minutes=0, hours=0, weeks=0)
-    COPY_AGGREGATION_TIME_LIMIT = datetime.timedelta(minutes=20)
-    CREATE_AGGREGATION_TIME_LIMIT = datetime.timedelta(minutes=20)
-    DELETE_AGGREGATION_TIME_LIMIT = datetime.timedelta(minutes=20)
-    MODIFY_AGGREGATION_TIME_LIMIT = datetime.timedelta(minutes=20)
-    MOVE_AGGREGATION_TIME_LIMIT = datetime.timedelta(minutes=20)
-    
-    AGGREGATION_TIME_LIMIT = {
-        EVENT_TYPE_COPIED: COPY_AGGREGATION_TIME_LIMIT,
-        EVENT_TYPE_CREATED: CREATE_AGGREGATION_TIME_LIMIT,
-        EVENT_TYPE_DELETED: DELETE_AGGREGATION_TIME_LIMIT,
-        EVENT_TYPE_C_MODIFIED: MODIFY_AGGREGATION_TIME_LIMIT,
-        EVENT_TYPE_M_MODIFIED: MODIFY_AGGREGATION_TIME_LIMIT,
-        EVENT_TYPE_MOVED: MOVE_AGGREGATION_TIME_LIMIT,
-        }
-    
         
-    
     
     def __init__(self, event:FileSystemEvent, local_states:LocalState):
         # Dating now
         self.event_date = datetime.datetime.now()
         
+        # Saving LocalState Reference
         self.local_states = local_states
         
         # FileSystemEvent definitions
@@ -201,11 +179,6 @@ class LazydogEvent():
     def has_dest(self) -> bool:
         return self.is_moved_event() or self.is_copied_event()
     
-    # Check times
-    def is_aggregable_with(self, event) -> bool:
-        return True
-        #return abs(event.latest_event_date - self.latest_event_date) <= PipoEvent.AGGREGATION_TIME_LIMIT[self.type]
-    
     def has_same_mtime_than(self, previous_event) -> bool:
         return self.file_mtime == previous_event.file_mtime
     
@@ -237,7 +210,6 @@ class LazydogEvent():
     def p1_comes_before_p2(p1:str, p2:str) -> bool:
         return LazydogEvent.p1_comes_after_p2(p2, p1)
     
-    
     def comes_before(self, event) -> bool:
         return event.comes_after(self)
             
@@ -268,7 +240,7 @@ class LazydogEvent():
     def file_hash(self) -> str:
         if self._file_hash is None:
             if self.is_directory():
-                self._file_hash = 'DIR'
+                self._file_hash = self.local_states.DEFAULT_DIRECTORY_VALUE
             else:
                 try:
                     # Here we don't use local_states which is considered as historic value of hash. 
@@ -305,7 +277,7 @@ class LazydogEvent():
     @staticmethod
     def get_file_size(absolute_file_path:str) -> int:
         try:
-            return os.path.getsize(absolute_file_path)
+            return os.path.getsize(absolute_file_path) if not os.path.isdir(absolute_file_path) else None
         except:
             return None
         
@@ -361,11 +333,11 @@ class LazydogEvent():
             main_event.related_events.append(e)
         # re-init
         if self.is_modified_event() and not self.is_directory() and not main_event.is_directory():
-            if main_event._file_mtime != self._file_mtime or main_event._file_size != self._file_size or main_event._file_mtime != self._file_mtime:
+            if main_event._file_mtime != self._file_mtime or main_event._file_size != self._file_size:
                 main_event._file_inode = self._file_inode
                 main_event._file_mtime = self._file_mtime
                 main_event._file_size = self._file_size
-                main_event._file_hash = self._file_hash # which means hash will be recomputed...
+                main_event._file_hash = self._file_hash
         if main_event.is_directory():
             self._dir_files_qty = None
         # timing    
@@ -380,14 +352,9 @@ class LazydogEvent():
         # Re-assignment
         #self = main_event
     
-    def related_events_includes_inode(self, file_inode:int) -> bool:
-        for e in self.related_events:
-            if file_inode == e.file_inode:
-                return True
-        return False
-    
     # looking for the most probable source aamong a list of potential sources, based on the basename of the destination file or folder
-    def get_most_potential_source(self, src_paths:set, dest_path:str) -> str:
+    @staticmethod
+    def _get_most_potential_source(src_paths:set, dest_path:str) -> str:
         most_potential_sources = [x for x in src_paths if os.path.splitext(os.path.basename(x))[0] in os.path.splitext(os.path.basename(dest_path))[0]]
         most_potential_sources.sort(key = lambda x: -len(x))
         return most_potential_sources[0] if most_potential_sources is not None else next(iter(src_paths))
@@ -397,19 +364,8 @@ class LazydogEvent():
             if not self.is_copied_event():
                 self.type = LazydogEvent.EVENT_TYPE_COPIED
                 self.to_path = self.path
-                self.path = self.get_most_potential_source(src_paths, self.to_path)
+                self.path = LazydogEvent._get_most_potential_source(src_paths, self.to_path)
             # save all potential parent source path, for future use
             if os.path.basename(sp) == os.path.basename(self.to_path):
                 self.possible_src_paths[sp] = os.path.dirname(sp) if sp != '/' else None
             
-            
-    def transforms_created_into_moved_event(self, upper_moved_event):
-        self.type = LazydogEvent.EVENT_TYPE_MOVED
-        self.to_path = self.ref_path
-        self.path = os.path.join(upper_moved_event.path, self.basename)
-        # update for high-level
-        self.update_main_event(upper_moved_event)
-        # update timings
-        self.latest_reworked_date = datetime.datetime.now()
-        
-        

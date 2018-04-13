@@ -1,8 +1,6 @@
 import os
 import errno
 
-
-
 from watchdog.observers.inotify_c import (
     Inotify, 
     InotifyEvent, 
@@ -72,8 +70,10 @@ class Inotify(Inotify):
             break
 
         with self._lock:
+
             event_list = []
             for wd, mask, cookie, name in Inotify._parse_event_buffer(event_buffer):
+
                 if wd == -1:
                     continue
                 wd_path = self._path_for_wd[wd]

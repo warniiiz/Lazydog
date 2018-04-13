@@ -3,6 +3,13 @@ from watchdog.observers.inotify import (
     InotifyObserver
     )
 
+from watchdog.observers.api import (
+    BaseObserver,
+    DEFAULT_OBSERVER_TIMEOUT
+)
+
+from watchdog.utils import unicode_paths
+
 from watchdog.events import (
     FileMovedEvent,
     DirMovedEvent,
@@ -12,7 +19,10 @@ from watchdog.events import (
     DirDeletedEvent,
     )
 
-from ..events import (
+
+from revised_watchdog.observers.inotify_buffer import InotifyBuffer
+
+from revised_watchdog.events import (
     TrueFileModifiedEvent,
     MetaFileModifiedEvent,
     TrueDirModifiedEvent,
@@ -40,10 +50,16 @@ class InotifyEmitter(InotifyEmitter):
         ``float``
     """
 
+    def on_thread_start(self):
+        path = unicode_paths.encode(self.watch.path)
+        self._inotify = InotifyBuffer(path, self.watch.is_recursive)
+
+
     def queue_events(self, timeout, full_events=False):
         #If "full_events" is true, then the method will report unmatched move events as seperate events
         #This behavior is by default only called by a InotifyFullEmitter
         with self._lock:
+
             event = self._inotify.read_event()
             if event is None:
                 return
@@ -107,4 +123,13 @@ class InotifyEmitter(InotifyEmitter):
 
 
 class InotifyObserver(InotifyObserver):
-    pass
+    """
+    Observer thread that schedules watching directories and dispatches
+    calls to event handlers.
+    """
+
+    def __init__(self, timeout=DEFAULT_OBSERVER_TIMEOUT, generate_full_events=False):
+        if (generate_full_events):
+            BaseObserver.__init__(self, emitter_class=InotifyFullEmitter, timeout=timeout)
+        else:
+            BaseObserver.__init__(self, emitter_class=InotifyEmitter, timeout=timeout)

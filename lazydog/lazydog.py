@@ -9,7 +9,7 @@ from handlers import HighlevelEventHandler
 __version__ = "0.1"
 
 
-
+# this function shows an example of how to use Lazydog.
 def logging_in_console(directory:str=''):
     if directory == None:
         directory = ''
@@ -62,8 +62,6 @@ def logging_in_console(directory:str=''):
 def main():
     
     import sys
-    print(len(sys.argv))
-    print(sys.argv[0])
     directory_to_watch = sys.argv[1] if len(sys.argv) > 1 else None
     logging_in_console(directory_to_watch)
     

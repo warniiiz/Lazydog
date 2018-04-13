@@ -45,6 +45,7 @@ class LazydogEvent():
         self.latest_event_date = self.event_date
         self.latest_reworked_date = datetime.datetime.now()
         self.is_related = False
+        self.is_irrelevant = False
         
         #logging.debug('---' + str(self))
         
@@ -56,13 +57,15 @@ class LazydogEvent():
                     "to '" + self.to_path + "' " + 
                     'mtime[' + str(self.file_mtime) + '] ' +
                     'size[' + str(self.file_size) + '] ' +
-                    'inode[' + str(self.file_inode) + '] ')
+                    'inode[' + str(self.file_inode) + '] ' +
+                    ('irrelevant ' if self.is_irrelevant else ''))
         else:
             return ('logged[' + str(self.event_date) + '] ' +
                     self.type + ": '" + self.path +  "' " + 
                     'mtime[' + str(self.file_mtime) + '] ' +
                     'size[' + str(self.file_size) + '] ' +
-                    'inode[' + str(self.file_inode) + '] ')
+                    'inode[' + str(self.file_inode) + '] ' +
+                    ('irrelevant ' if self.is_irrelevant else ''))
             
     
     def _correct_path_value(self, value:str) -> str:

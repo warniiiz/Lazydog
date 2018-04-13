@@ -10,7 +10,7 @@ from states import LocalState
 from events import LazydogEvent
 from queues import DatedlocaleventQueue
 
-from revised_watchdog.observers.inotify import InotifyObserver
+from revised_watchdog.observers.inotify import InotifyEmitter, InotifyObserver
 from watchdog.observers.polling import PollingObserver
 
 
@@ -20,18 +20,8 @@ class HighlevelEventHandler(threading.Thread):
     """Post-treat the low level events to suggest only one high-level ones."""
 
     POSTTREATMENT_TIME_LIMIT = datetime.timedelta(seconds=2)
-    CREATE_EVENT_TIME_LIMIT_FOR_EMPTY_FILES = datetime.timedelta(minutes=15)
-    
-    #===========================================================================
-    # GENERAL_TIME_LIMIT = datetime.timedelta(seconds=60)             # 60 sec
-    # DELETE_EVENT_TIME_LIMIT = datetime.timedelta(seconds=2)
-    # COPY_EVENT_TIME_LIMIT = datetime.timedelta(seconds=2)    
-    # CREATE_EVENT_TIME_LIMIT = datetime.timedelta(seconds=2)
-    # CREATE_EVENT_TIME_LIMIT_FOR_EMPTY_FILES = datetime.timedelta(minutes=15)
-    # MOVE_EVENT_TIME_LIMIT = datetime.timedelta(seconds=2)
-    # MOVE_EVENT_TIME_LIMIT_FOR_EMPTY_FILES = datetime.timedelta(minutes=1)
-    # MODIFY_EVENT_TIME_LIMIT = datetime.timedelta(seconds=2)       
-    #===========================================================================
+    CREATE_EVENT_TIME_LIMIT_FOR_EMPTY_FILES = datetime.timedelta(minutes=15) # older behaviour...
+    CREATE_EVENT_TIME_LIMIT_FOR_EMPTY_FILES = datetime.timedelta(seconds=2)
     
     @classmethod
     def get_instance(cls, watched_dir:str, hashing_function=None, custom_intializing_values=None):
@@ -63,12 +53,6 @@ class HighlevelEventHandler(threading.Thread):
 
     def stop(self):
         self._stop_handler.set()
-    
-    def size(self):
-        return len(self.queue)
-
-    def is_empty(self):
-        return self.size() == 0
     
     def _update_posttreatment_cursor(self):
         self._latest_highlevel_posttreatment = datetime.datetime.now()
@@ -114,7 +98,7 @@ class HighlevelEventHandler(threading.Thread):
         
         # Cleaning...
         for k, t in self._copied_dir_list.items():
-            if datetime.datetime.now() - t > LazydogEvent.COPY_AGGREGATION_TIME_LIMIT:
+            if datetime.datetime.now() - t > datetime.timedelta(minutes=20):
                 self._copied_dir_list.pop(k)
         
         to_paths = {}
@@ -174,7 +158,7 @@ class HighlevelEventHandler(threading.Thread):
                                     self._update_local_state(ee)
                                     self.events_list.remove(ee)
                             # add source (and transforms) 
-                            e.add_source_paths_and_transforms_into_copied_event(set([os.path.join(sp, e.basename)]))
+                            e.add_source_paths_and_transforms_into_copied_event(os.path.join(sp, e.basename))
                             # update main and remove
                             if e in self.events_list:
                                 e.update_main_event(dir_created_event)
@@ -192,7 +176,7 @@ class HighlevelEventHandler(threading.Thread):
             self._posttreat_copied_folder()
         
         
-                        
+    # to protect against get_available_events modifications...              
     def posttreat_lowlevel_event(self, local_event:LazydogEvent):
         
         # posttreat file copy is done at the end of this method
@@ -204,18 +188,23 @@ class HighlevelEventHandler(threading.Thread):
                        
         # deleted events arrive backward
         if local_event.is_deleted_event():
-            for e in [x for x in reversed(self.events_list) if x.is_deleted_event() and x.is_aggregable_with(local_event)]:
-                if local_event.same_or_comes_before(e):
+            for e in [x for x in reversed(self.events_list) if x.is_deleted_event()]:
+                if local_event.comes_before(e):
                     e.update_main_event(local_event)
                     self.events_list.remove(e)
                     local_event.is_related = False
                     self._update_posttreatment_cursor()
-            for e in [x for x in reversed(self.events_list) if x.has_same_path_than(local_event) and x.is_aggregable_with(local_event)]:
-                if e.is_created_event() or e.is_copied_event() or e.is_modified_event():
-                    self.events_list.remove(e)
-                    local_event.is_related = True
+                elif local_event.has_same_path_than(e):
+                    local_event.update_main_event(e)
                     self._update_posttreatment_cursor()
-                if e.is_moved_event():
+            for e in [x for x in reversed(self.events_list) if x.has_same_path_than(local_event)]:
+                if e.is_created_event() or e.is_copied_event() or e.is_modified_event():
+                    e.update_main_event(local_event)
+                    self.events_list.remove(e)
+                    local_event.is_related = False
+                    local_event.is_irrelevant = True
+                    self._update_posttreatment_cursor()
+                elif e.is_moved_event():
                     e.update_main_event(local_event)
                     local_event.path = e.path
                     local_event.is_related = False
@@ -225,12 +214,12 @@ class HighlevelEventHandler(threading.Thread):
         # moving event can also arrive just after newly created or copied or moved event
         if local_event.is_moved_event():
             self._update_local_state(local_event)
-            for e in [x for x in self.events_list if (x.is_created_event() or x.is_copied_event() or x.is_moved_event()) and x.is_aggregable_with(local_event)]:
+            for e in [x for x in self.events_list if (x.is_created_event() or x.is_copied_event() or x.is_moved_event())]:
                 if local_event.has_same_src_path_than(e):
                     local_event.update_main_event(e)
                     e.ref_path = local_event.to_path
-                    if e.is_moved_event():
-                        self._posttreat_move_by_deletion_creation(e)
+                elif local_event.comes_after(e) and e.is_moved_event():
+                    local_event.update_main_event(e)
                 
         
         # modified event
@@ -239,7 +228,7 @@ class HighlevelEventHandler(threading.Thread):
             if local_event.is_directory():
                 local_event.is_related = True
             else:
-                for e in [x for x in reversed(self.events_list) if x.is_aggregable_with(local_event)]:
+                for e in [x for x in reversed(self.events_list)]:
                     # modified file event related to deleted, moved or copied event
                     if e.is_deleted_event() or e.is_moved_event() or e.is_copied_event():
                         if local_event.same_or_comes_after(e):
@@ -291,7 +280,7 @@ class HighlevelEventHandler(threading.Thread):
     def save_locals(self, file_path, file_references):
         self.local_states.save(file_path, file_references[0], file_references[1], file_references[2])
         
-    
+    # to protect against posttreat_lowlevel_event modifications...
     def get_available_events(self) -> list:
         ready_events = []
         if not self._block_releases_while_hashing and LazydogEvent.datetime_difference_from_now(self._latest_highlevel_posttreatment) > HighlevelEventHandler.POSTTREATMENT_TIME_LIMIT:
@@ -302,6 +291,10 @@ class HighlevelEventHandler(threading.Thread):
                     if e.is_file_created_event() and e.is_empty() and e.idle_time() <= HighlevelEventHandler.CREATE_EVENT_TIME_LIMIT_FOR_EMPTY_FILES:
                         continue
                     
+                    if e.is_irrelevant:
+                        self.events_list.remove(e)
+                        continue
+
                     self.events_list.remove(e)
                     ready_events.append(e)
                     
@@ -329,6 +322,10 @@ class HighlevelEventHandler(threading.Thread):
 
                 # Post-treatment of the next lowlevel event
                 lowlevel_event = self.lowlevel_event_queue.next()
+                print('+++ INCOMING LOW LEVEL EVENT +++')
+                for e in self.events_list:
+                    print('+ ' + str(e))
+                print(lowlevel_event)
                 
                 #logging.debug('+++' + str(lowlevel_event))
                 self.posttreat_lowlevel_event(lowlevel_event)

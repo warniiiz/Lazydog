@@ -11,6 +11,9 @@ from revised_watchdog.observers.inotify import InotifyObserver
 TEST_DIR = None
 TESTED_QUEUE = None
 
+def create_file(filename:str):
+    os.mknod(TEST_DIR + filename)
+
 def test_instanciate_tested_queue(tmpdir):
     # tmpdir creates a temporary test dir
     global TEST_DIR
@@ -35,11 +38,11 @@ def test_DatedlocaleventQueue():
     observer.start()
 
     # Generating a created event
-    os.system('touch ' + TEST_DIR + '/test.txt')
+    create_file('/test.txt')
 
     # Checking result - 3 new events during the tests
     time.sleep(0.1)
-    time.sleep(0.1)
+    time.sleep(0.5)
     assert TESTED_QUEUE.size() > 0
     assert not TESTED_QUEUE.is_empty() 
 

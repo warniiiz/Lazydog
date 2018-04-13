@@ -45,9 +45,52 @@ until finished
 
 End with an example of getting some data out of the system or using it for a little demo
 
-## Running the tests
+## Test coverage
 
-Explain how to run the automated tests for this system
+Check the test coverage:
+```
+$ py.test --cov lazydog
+```
+
+Test covergae is > 90%. The metric is not very relevant about the test quality, but at least there are some tests ;)
+
+```
+========================== test session starts ===========================
+platform linux -- Python 3.4.2, pytest-3.5.0, py-1.5.3, pluggy-0.6.0
+rootdir: /media/maxtor/media/Python/Lazydog, inifile:
+plugins: cov-2.5.1
+collected 58 items
+
+lazydog/test/test_events.py ................                        [ 27%]
+lazydog/test/test_handlers.py ......................                [ 65%]
+lazydog/test/test_queues.py ..                                      [ 68%]
+lazydog/test/test_states.py ..................                      [100%]
+
+----------- coverage: platform linux, python 3.4.2-final-0 -----------
+Name                                                   Stmts   Miss  Cover
+--------------------------------------------------------------------------
+lazydog/__init__.py                                        0      0   100%
+lazydog/dropbox_content_hasher.py                         66     14    79%
+lazydog/events.py                                        249      7    97%
+lazydog/handlers.py                                      214     29    86%
+lazydog/lazydog.py                                        39     39     0%
+lazydog/queues.py                                         18      0   100%
+lazydog/revised_watchdog/__init__.py                       0      0   100%
+lazydog/revised_watchdog/events.py                        31      1    97%
+lazydog/revised_watchdog/observers/__init__.py             0      0   100%
+lazydog/revised_watchdog/observers/inotify.py             49      6    88%
+lazydog/revised_watchdog/observers/inotify_buffer.py      12      0   100%
+lazydog/revised_watchdog/observers/inotify_c.py           72     22    69%
+lazydog/states.py                                        109      1    99%
+lazydog/test/test_events.py                              261      2    99%
+lazydog/test/test_handlers.py                            355      3    99%
+lazydog/test/test_queues.py                               31      0   100%
+lazydog/test/test_states.py                              172      0   100%
+--------------------------------------------------------------------------
+TOTAL                                                   1678    124    93%
+
+====================== 58 passed in 30.15 seconds ========================
+```
 
 ### Break down into end to end tests
 

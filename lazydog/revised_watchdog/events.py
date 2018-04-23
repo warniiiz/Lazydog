@@ -1,3 +1,62 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright 2018 Clément Warneys <clement.warneys@gmail.com>
+# Copyright 2011 Yesudeep Mangalapilly <yesudeep@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+revised_watchdog.events
+=======================
+
+:module: watchdog.events
+:synopsis: File system events and event handlers.
+:author: yesudeep@google.com (Yesudeep Mangalapilly)
+:author: Clément Warneys <clement.warneys@gmail.com>
+
+This module is overloading the original **watchdog.events** module 
+by revising and completing it. Please read original **watchdog** project 
+documentation for more information: https://github.com/gorakhargosh/watchdog
+
+This module imports some definitions of watchdog.events and keeps them unchanged:
+
+* ``FileModifiedEvent``
+* ``DirModifiedEvent``
+* ``FileSystemEvent``
+* ``FileSystemEventHandler``
+* ``EVENT_TYPE_MOVED``
+* ``EVENT_TYPE_CREATED``
+* ``EVENT_TYPE_DELETED``
+
+It adds the following definitions, in order to add some granularity in the
+``ModifiedEvent`` definition, thus differentiating content modification
+from only metadata (access date, owner, etc.) modification:
+
+* ``MetaFileModifiedEvent``
+* ``TrueFileModifiedEvent``
+* ``MetaDirModifiedEvent``
+* ``TrueDirModifiedEvent``
+* ``EVENT_TYPE_C_MODIFIED``
+* ``EVENT_TYPE_M_MODIFIED``
+
+Finally, it overloads the FileSystemEventHandler class, in order 
+to manage the new granularity of modified events:
+
+* ``FileSystemEventHandler``
+
+"""
+
 from watchdog.events import (
     FileModifiedEvent, 
     DirModifiedEvent, 
@@ -7,10 +66,6 @@ from watchdog.events import (
     EVENT_TYPE_CREATED, 
     EVENT_TYPE_DELETED
     )
-
-#############################################
-### watchdog.events                       ###
-#############################################
 
 EVENT_TYPE_C_MODIFIED = 'modified' # content-only modification
 EVENT_TYPE_M_MODIFIED = 'metadata' # metadata-only modification
@@ -24,7 +79,7 @@ class MetaFileModifiedEvent(FileModifiedEvent):
         super(MetaFileModifiedEvent, self).__init__(src_path)
 
 class TrueFileModifiedEvent(FileModifiedEvent):
-    """File system event representing true file modification on the file system."""
+    """File system event representing true file content modification on the file system."""
 
     event_type = EVENT_TYPE_C_MODIFIED
 
@@ -40,7 +95,7 @@ class MetaDirModifiedEvent(DirModifiedEvent):
         super(MetaDirModifiedEvent, self).__init__(src_path)
 
 class TrueDirModifiedEvent(DirModifiedEvent):
-    """File system event representing true directory modification on the file system."""
+    """File system event representing true directory content modification on the file system."""
 
     event_type = EVENT_TYPE_C_MODIFIED
 
@@ -50,7 +105,7 @@ class TrueDirModifiedEvent(DirModifiedEvent):
 class FileSystemEventHandler(FileSystemEventHandler):
     """
     Base file system event handler that you can override methods from.
-    With modified dispatch method, added on_xxxx_modified methods,
+    With modified dispatch method, added ``on_xxxx_modified methods``,
     thus covering specific needs of lazydog.
     """
 

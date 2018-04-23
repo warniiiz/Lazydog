@@ -1,3 +1,38 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright 2018 Clément Warneys <clement.warneys@gmail.com>
+# Copyright 2011 Yesudeep Mangalapilly <yesudeep@gmail.com>
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""
+revised_watchdog.observers.inotify_c
+====================================
+
+:module: revised_watchdog.observers.inotify_c
+:author: yesudeep@google.com (Yesudeep Mangalapilly)
+:author: Clément Warneys <clement.warneys@gmail.com>
+
+This module is overloading the original **watchdog.observers.inotify_c** module 
+by revising and completing it. Please read original **watchdog** project 
+documentation for more information: https://github.com/gorakhargosh/watchdog
+
+Fundamental changes and corrections have been brought to the :class:`Inotify` 
+class, whose behaviour was not correct when moving or deleting sub-directories.
+
+"""
+
 import os
 import errno
 
@@ -8,14 +43,14 @@ from watchdog.observers.inotify_c import (
     DEFAULT_EVENT_BUFFER_SIZE
     )
 
-#############################################
-### watchdog.observers.pipoinotify_c      ###
-#############################################
 
 class Inotify(Inotify):
     """
-    Linux inotify(7) API wrapper class. With modified read_events method, 
-    and added _remove_watch_bookkeeping method, thus covering specifics needs of lazydog
+    Linux inotify(7) API wrapper class. 
+
+    With modified ``read_events`` method, 
+    and added ``_remove_watch_bookkeeping`` method, 
+    thus covering specifics needs of lazydog.
 
     :param path:
         The directory path for which we want an inotify object.
@@ -33,7 +68,9 @@ class Inotify(Inotify):
 
     def read_events(self, event_buffer_size=DEFAULT_EVENT_BUFFER_SIZE):
         """
-        Reads events from inotify and yields them.
+        Reads events from inotify and yields them to the Inotify buffer.
+        This method has been largely modified from original watchdog module...
+        Thus preventing from unwanted behaviour.
         """
         # HACK: We need to traverse the directory path
         # recursively and simulate events for newly

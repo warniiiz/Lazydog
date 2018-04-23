@@ -1,5 +1,7 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
+# Copyright 2018 Clément Warneys <clement.warneys@gmail.com>
 # Copyright 2014 Thomas Amland <thomas.amland@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,6 +16,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+"""
+revised_watchdog.observers.inotify_buffer
+=========================================
+
+:module: revised_watchdog.observers.inotify_c
+:author: Thomas Amland <thomas.amland@gmail.com>
+:author: Clément Warneys <clement.warneys@gmail.com>
+
+This module is overloading the original **watchdog.observers.inotify_buffer** module 
+by revising and completing it. Please read original **watchdog** project 
+documentation for more information: https://github.com/gorakhargosh/watchdog
+
+The main change is in the :class:`InotifyBuffer` class, whose ``__init__`` 
+method now uses revised watchdog :class:`Inotify` class.
+
+"""
+
 import logging
 from watchdog.utils import BaseThread
 from watchdog.utils.delayed_queue import DelayedQueue
@@ -22,13 +41,14 @@ from revised_watchdog.observers.inotify_c import Inotify
 
 logger = logging.getLogger(__name__)
 
-#############################################
-### watchdog.observers.inotify_buffer     ###
-#############################################
-
 class InotifyBuffer(InotifyBuffer):
-    """A wrapper for `Inotify` that holds events for `delay` seconds. During
+    """
+    A wrapper for `Inotify` that holds events for `delay` seconds. During
     this time, IN_MOVED_FROM and IN_MOVED_TO events are paired.
+
+    Please note that his class remains unmodified 
+    in revised_watchdog package. Only the ``__init__`` method is overided 
+    in order it uses the new definition of :class:`Inotify` class.
     """
 
 

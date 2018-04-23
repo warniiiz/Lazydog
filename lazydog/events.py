@@ -1,3 +1,4 @@
+"""The events module documentation"""
 
 import datetime
 import os
@@ -7,6 +8,7 @@ from revised_watchdog.events import FileSystemEvent
 
 
 class LazydogEvent():
+    """LazydogEvent is the only class of lazydog.events"""
 
     EVENT_TYPE_COPIED = 'copied'
     EVENT_TYPE_CREATED = 'created'

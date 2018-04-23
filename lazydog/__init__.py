@@ -1,8 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright 2018 Clément Warneys <clement.warneys@gmail.com>
-# Copyright 2012 Google, Inc.
+# Copyright 2018 ClÃ©ment Warneys <clement.warneys@gmail.com>
+# Copyright 2011 Yesudeep Mangalapilly <yesudeep@gmail.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,3 +15,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+
+"""
+.. automodule:: lazydog.events
+   :members:
+"""
+
+__version__ = '0.1'
+

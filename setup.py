@@ -1,7 +1,10 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 '''
 Created on 17 janv. 2018
 
-@author: Clément Warneys <clement.warneys@gmail.com>
+@author: Clement Warneys <clement.warneys@gmail.com>
 '''
 
 from __future__ import print_function
@@ -26,7 +29,7 @@ def read(*filenames, **kwargs):
             buf.append(f.read())
     return sep.join(buf)
 
-long_description = read('README.txt', 'CHANGES.txt')
+long_description = read('README.md')
 
 class PyTest(TestCommand):
     
@@ -45,7 +48,7 @@ setup(
     version=lazydog.__version__,
     url='http://github.com/warniiiz/lazydog/',
     license='Apache Software License',
-    author='Clément Warneys',
+    author='Clement Warneys',
     tests_require=['pytest'],
     
     #===========================================================================
@@ -73,7 +76,6 @@ setup(
         'Operating System :: OS Independent',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Topic :: Software Development :: Libraries :: Application Frameworks',
-        'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
         ],
     entry_points = {
         'console_scripts': ['lazydog=lazydog.lazydog:main'],

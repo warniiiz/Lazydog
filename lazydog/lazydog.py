@@ -6,7 +6,6 @@ import logging
 
 from handlers import HighlevelEventHandler
 
-__version__ = "0.1"
 
 
 # this function shows an example of how to use Lazydog.

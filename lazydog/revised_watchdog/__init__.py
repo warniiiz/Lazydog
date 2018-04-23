@@ -14,3 +14,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""
+This inner package is overloading the original **watchdog** package 
+by revising and completing it, resolving the current situation
+where the useful **watchdog** package is not maintained anymore...
+
+Please read original **watchdog** project documentation for more information:
+https://pypi.org/project/watchdog/
+
+.. automodule:: lazydog.revised_watchdog.events
+   :members:
+
+.. automodule:: lazydog.revised_watchdog.observers
+   :members:
+"""

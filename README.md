@@ -1,14 +1,4 @@
-General guidelines:
-https://jeffknupp.com/blog/2013/08/16/open-sourcing-a-python-project-the-right-way/
 
-
-This file should contain the following pieces of information: 
-
-* A description of your project
-* Links to the project's ReadTheDocs page
-* A TravisCI button showing the state of the build
-* "Quickstart" documentation (how to quickly install and use your project)
-* A list of non-Python dependencies (if any) and how to install them
 
 
 # Lazydog
@@ -52,7 +42,7 @@ Check the test coverage:
 $ py.test --cov lazydog
 ```
 
-Test covergae is > 90%. The metric is not very relevant about the test quality, but at least there are some tests ;)
+Test covergae is > 90%. The metric is not very relevant about the test quality, but at least you will be reasssured there are some tests ;)
 
 ```
 ========================== test session starts ===========================
@@ -145,14 +135,11 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 
 
 When finished, please see http://pandoc.org/ to convert from .md to .rst and include it to setup.py file.
-
+Test
 
 
 # Configuration of inotify...
 
-
-
-===============================================================================
 Listen uses inotify by default on Linux to monitor directories for changes. It's not uncommon to encounter a system limit on the number of files you can monitor. For example, Ubuntu Lucid's (64bit) inotify limit is set to 8192.
  
 You can get your current inotify file watch limit by executing:
@@ -170,4 +157,19 @@ $ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
 $ sudo sysctl -p
 
 
+
+
+# Special thanks
+
+## General guidelines:
+
+Thanks to Jeff Knupp for this general guidelines for open sourcing a python project (which helped me a lot since it is my first open source project I deliver):
+https://jeffknupp.com/blog/2013/08/16/open-sourcing-a-python-project-the-right-way/
+
+REMEMBER: This file should contain the following pieces of information: 
+* A description of your project
+* Links to the project's ReadTheDocs page
+* A TravisCI button showing the state of the build
+* "Quickstart" documentation (how to quickly install and use your project)
+* A list of non-Python dependencies (if any) and how to install them
 

@@ -1,6 +1,28 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#
+# Copyright 2018 Clément Warneys <clement.warneys@gmail.com>
+# Copyright 2017 Dropbox, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
+"""
+:module: lazydog.dropbox_content_hasher
+:synopsis: Function to get hash of a file, based on dropbox api hasher.
+:author: Dropbox, Inc.
+:author: Clément Warneys <clement.warneys@gmail.com>
+
+"""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import hashlib
@@ -11,7 +33,31 @@ import os
 import logging
 
 
-def default_hash_function(absolute_path:str, default_directory_hash='DIR'):
+def default_hash_function(absolute_path:str, default_directory_hash:str='DIR'):
+    """
+    Main function in this module that returns the 
+    dropbox-like hash of any local file. If the local path does not exist, 
+    ``None`` is returned. If the local path is a directory, the 
+    ``default_directory_hash`` parameter is returned, or the default 
+    string "DIR". 
+
+    :param absolute_path:
+        The absolute local path of the file or directory.
+    :type absolute_path:
+        str
+    :param default_directory_hash:
+        *Optional*. The returned value in case the absolute path is a directory.
+    :type absolute_path:
+        str
+    :returns: 
+        The hash of the file or directory located in ``absolute_path``. 
+        The hash is computed based on the default Dropbox API hasher. 
+        ``None`` if absolute local path does not exist.
+    :rtype: 
+        str
+
+    """
+
     _hash = None
     try:
         duration = time.perf_counter()
@@ -46,10 +92,9 @@ class DropboxContentHasher(object):
     hexdigest() convenience method returns a hexadecimal-encoded version, which
     is what the "content_hash" metadata field uses.
 
-    This class has the same interface as the hashers in the standard 'hashlib'
-    package.
+    How to use it:
 
-    Example:
+    .. code-block:: python 
 
         hasher = DropboxContentHasher()
         with open('some-file', 'rb') as f:
@@ -59,6 +104,7 @@ class DropboxContentHasher(object):
                     break
                 hasher.update(chunk)
         print(hasher.hexdigest())
+
     """
 
     BLOCK_SIZE = 4 * 1024 * 1024

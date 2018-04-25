@@ -17,9 +17,6 @@
 # limitations under the License.
 
 """
-revised_watchdog.observers.inotify
-==================================
-
 :module: revised_watchdog.observers.inotify
 :synopsis: ``inotify(7)`` based emitter implementation, enhanced implementation of original watchdog one.
 :author: Sebastien Martini <seb@dbzteam.org>
@@ -29,14 +26,15 @@ revised_watchdog.observers.inotify
 :author: Clément Warneys <clement.warneys@gmail.com>
 :platforms: Linux 2.6.13+.
 
-This module is overloading the original **watchdog.observers.inotify** module 
+This module is overloading the original :py:mod:`watchdog.observers.inotify` module 
 by revising and completing it. Please read original **watchdog** project 
 documentation for more information: https://github.com/gorakhargosh/watchdog
 
-The main changes are in the :class:`InotifyEmitter` class:
+The main changes concern some methods in the :py:class:`InotifyEmitter` class:
 
-* ``on_thread_start`` method now uses revised :class:`InotifyBuffer`
-* ``queue_events`` method has been simplified in order to reduce \
+* :py:meth:`~InotifyEmitter.on_thread_start` This method now uses revised \
+:py:class:`~lazydog.revised_watchdog.observers.inotify_buffer.InotifyBuffer`.
+* :py:meth:`~InotifyEmitter.queue_events` This method has been simplified in order to reduce \
 the number of emitted low-level events, in comparison with \
 original watchdog module. 
 
@@ -65,9 +63,9 @@ from watchdog.events import (
     )
 
 
-from revised_watchdog.observers.inotify_buffer import InotifyBuffer
+from lazydog.revised_watchdog.observers.inotify_buffer import InotifyBuffer
 
-from revised_watchdog.events import (
+from lazydog.revised_watchdog.events import (
     TrueFileModifiedEvent,
     MetaFileModifiedEvent,
     TrueDirModifiedEvent,
@@ -77,15 +75,17 @@ from revised_watchdog.events import (
 class InotifyEmitter(InotifyEmitter):
     """
     inotify(7)-based event emitter. Revised package mainly 
-    concerns ``queue_events`` method, thus covering 
+    concerns :py:meth:`queue_events` method, thus covering 
     specific needs of lazydog package.
 
     :param event_queue:
         The event queue to fill with events.
+    :type event_queue:
+        :py:class:`watchdog.events.EventQueue`
     :param watch:
         A watch object representing the directory to monitor.
     :type watch:
-        :class:`watchdog.observers.api.ObservedWatch`
+        :py:class:`watchdog.observers.api.ObservedWatch`
     :param timeout:
         Read events blocking timeout (in seconds).
     :type timeout:
@@ -100,7 +100,7 @@ class InotifyEmitter(InotifyEmitter):
     def queue_events(self, timeout, full_events=False):
         """
         This method is classifying the events received from Inotify into
-        watchdog events type (defined in ``watchdog.events`` module).
+        watchdog events type (defined in :py:mod:`watchdog.events` module).
 
         :param timeout:
             Unused param (from watchdog original package).
@@ -110,9 +110,9 @@ class InotifyEmitter(InotifyEmitter):
             If ``True``, then the method will report unmatched move 
             events as separate events. This means that if 
             ``True``, a file move event from outside the watched directory
-            will result in a :class:`FileMovedEvent` event, with no origin. Else 
-            (if ``False``), it will result in a :class:`FileCreatedEvent` event.
-            This behavior is by default only called by a :class:`InotifyFullEmitter`.
+            will result in a :py:class:`watchdog.events.FileMovedEvent` event, with no origin. Else 
+            (if ``False``), it will result in a :py:class:`watchdog.events.FileCreatedEvent` event.
+            This behavior is by default only called by a :py:class:`InotifyFullEmitter`.
         :type full_events:
             boolean
         """
@@ -186,8 +186,8 @@ class InotifyObserver(InotifyObserver):
     calls to event handlers. 
 
     Please note that his class remains unmodified 
-    in revised_watchdog package. Only the ``__init__`` method is overided 
-    in order it uses the new definition of :class:`InotifyEmitter` class.
+    in revised_watchdog package. Only the :py:meth:`__init__` method is overided 
+    in order it uses the new definition of :py:class:`InotifyEmitter` class.
     """
 
     def __init__(self, timeout=DEFAULT_OBSERVER_TIMEOUT, generate_full_events=False):

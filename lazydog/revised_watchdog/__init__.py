@@ -23,9 +23,30 @@ where the useful **watchdog** package is not maintained anymore...
 Please read original **watchdog** project documentation for more information:
 https://pypi.org/project/watchdog/
 
+revised_watchdog.events
+=======================
+
 .. automodule:: lazydog.revised_watchdog.events
    :members:
 
-.. automodule:: lazydog.revised_watchdog.observers
+
+
+revised_watchdog.observers.inotify
+==================================
+
+.. automodule:: lazydog.revised_watchdog.observers.inotify
    :members:
+
+revised_watchdog.observers.inotify_c
+====================================
+
+.. automodule:: lazydog.revised_watchdog.observers.inotify_c
+   :members:
+   
+revised_watchdog.observers.inotify_buffer
+=========================================
+
+.. automodule:: lazydog.revised_watchdog.observers.inotify_buffer
+   :members:
+
 """

@@ -175,7 +175,7 @@ def test_LS_basics_2():
     # Adding a file
     create_file('/test2.txt')
     assert LS.get_hash('/test2.txt') == 'HASH'
-    assert LS.get_sizetime('/test2.txt') == (0, os.path.getmtime(LS.absolute_local_path('/test2.txt')))
+    assert LS.get_sizetime('/test2.txt') == (0, round(os.path.getmtime(LS.absolute_local_path('/test2.txt')), 3))
     # Adding a file
     create_file('/test3.txt')
     assert LS.get_hash('/test3.txt', compute_if_none=False) == None
@@ -188,7 +188,7 @@ def test_LS_basics_3():
     LS = LocalState(TEST_DIR)
     # Empty file hash = e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
     assert LS.get_files_by_hash_key('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855') == set(['/test.txt', '/test2.txt', '/test3.txt'])
-    assert LS.get_files_by_sizetime_key((0, os.path.getmtime(LS.absolute_local_path('/test2.txt')))) == set(['/test2.txt'])
+    assert LS.get_files_by_sizetime_key((0, round(os.path.getmtime(LS.absolute_local_path('/test2.txt')), 3))) == set(['/test2.txt'])
     # Delete a file
     delete_file('/test3.txt')
     assert LS.get_hash('/test3.txt') == 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'

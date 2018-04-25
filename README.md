@@ -17,6 +17,67 @@ What things you need to install the software and how to install them
 Give examples
 ```
 
+
+
+### Example how to use it
+
+Below is an example on how to initialize the high-level lazydog event handler, and log every new event in the console (using logging module). The watched directory is the current one (using ```os.getcwd()```).
+
+
+```python 
+
+import logging
+import os
+
+from lazydog.handlers import HighlevelEventHandler
+
+# LOG    
+# create logger 
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
+# create console handler with a higher log level
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.DEBUG)
+# create formatter and add it to the handlers
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+console_handler.setFormatter(formatter)
+# add the handlers to the logger
+logger.addHandler(console_handler)
+
+# INITIALIZE 
+# get current dir
+watched_dir = os.getcwd()
+# initializing a new HighlevelEventHandler
+highlevel_handler = HighlevelEventHandler.get_instance(watched_dir)
+# starting it (since it is a thread)
+highlevel_handler.start()
+    
+# OPERATING
+try:
+    while True:
+
+        # The following loop check every 1 second if any new event.
+        time.sleep(1)
+        local_events = highlevel_handler.get_available_events()
+        
+        # If any, it logs it directly in the console.
+        if len(local_events) > 0:
+            logging.info('')
+            logging.info('LIST OF THE LAST HIGH-LEVEL EVENTS: ')
+        for e in local_events:
+            logging.info(e)
+        
+        if len(local_events) > 0:
+            logging.info('')
+
+    # Keyboard <CTRL+C> interrupts the loop 
+    except KeyboardInterrupt:   
+        highlevel_handler.stop()
+
+```
+
+
+
 ### Installing
 
 A step by step series of examples that tell you have to get a development env running

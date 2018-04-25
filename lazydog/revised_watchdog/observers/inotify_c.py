@@ -17,18 +17,15 @@
 # limitations under the License.
 
 """
-revised_watchdog.observers.inotify_c
-====================================
-
 :module: revised_watchdog.observers.inotify_c
 :author: yesudeep@google.com (Yesudeep Mangalapilly)
 :author: Clément Warneys <clement.warneys@gmail.com>
 
-This module is overloading the original **watchdog.observers.inotify_c** module 
+This module is overloading the original :py:mod:`watchdog.observers.inotify_c` module 
 by revising and completing it. Please read original **watchdog** project 
 documentation for more information: https://github.com/gorakhargosh/watchdog
 
-Fundamental changes and corrections have been brought to the :class:`Inotify` 
+Fundamental changes and corrections have been brought to the original :py:class:`Inotify` 
 class, whose behaviour was not correct when moving or deleting sub-directories.
 
 """
@@ -48,16 +45,18 @@ class Inotify(Inotify):
     """
     Linux inotify(7) API wrapper class. 
 
-    With modified ``read_events`` method, 
-    and added ``_remove_watch_bookkeeping`` method, 
+    With modified :py:meth:`read_events` method, 
+    and added :py:meth:`_remove_watch_bookkeeping` method, 
     thus covering specifics needs of lazydog.
 
     :param path:
         The directory path for which we want an inotify object.
     :type path:
-        :class:`bytes`
+        bytes
     :param recursive:
-        ``True`` if subdirectories should be monitored; ``False`` otherwise.
+        ``True`` if subdirectories should be monitored. ``False`` otherwise.
+    :type recursive:
+        boolean
     """
     
     def _remove_watch_bookkeeping(self, path):

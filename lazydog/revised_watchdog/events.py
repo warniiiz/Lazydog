@@ -17,43 +17,40 @@
 # limitations under the License.
 
 """
-revised_watchdog.events
-=======================
-
-:module: watchdog.events
+:module: revised_watchdog.events
 :synopsis: File system events and event handlers.
 :author: yesudeep@google.com (Yesudeep Mangalapilly)
 :author: Clément Warneys <clement.warneys@gmail.com>
 
-This module is overloading the original **watchdog.events** module 
+This module is overloading the original :py:mod:`watchdog.events` module 
 by revising and completing it. Please read original **watchdog** project 
 documentation for more information: https://github.com/gorakhargosh/watchdog
 
 This module imports some definitions of watchdog.events and keeps them unchanged:
 
-* ``FileModifiedEvent``
-* ``DirModifiedEvent``
-* ``FileSystemEvent``
-* ``FileSystemEventHandler``
-* ``EVENT_TYPE_MOVED``
-* ``EVENT_TYPE_CREATED``
-* ``EVENT_TYPE_DELETED``
+* :py:class:`FileModifiedEvent`
+* :py:class:`DirModifiedEvent`
+* :py:class:`FileSystemEvent`
+* :py:class:`FileSystemEventHandler`
+* :py:data:`EVENT_TYPE_MOVED`
+* :py:data:`EVENT_TYPE_CREATED`
+* :py:data:`EVENT_TYPE_DELETED`
 
 It adds the following definitions, in order to add some granularity in the
-``ModifiedEvent`` definition, thus differentiating content modification
+:py:class:`watchdog.events.ModifiedEvent` definition, thus differentiating content modification
 from only metadata (access date, owner, etc.) modification:
 
-* ``MetaFileModifiedEvent``
-* ``TrueFileModifiedEvent``
-* ``MetaDirModifiedEvent``
-* ``TrueDirModifiedEvent``
-* ``EVENT_TYPE_C_MODIFIED``
-* ``EVENT_TYPE_M_MODIFIED``
+* :py:class:`MetaFileModifiedEvent`
+* :py:class:`TrueFileModifiedEvent`
+* :py:class:`MetaDirModifiedEvent`
+* :py:class:`TrueDirModifiedEvent`
+* :py:data:`EVENT_TYPE_C_MODIFIED`
+* :py:data:`EVENT_TYPE_M_MODIFIED`
 
 Finally, it overloads the FileSystemEventHandler class, in order 
 to manage the new granularity of modified events:
 
-* ``FileSystemEventHandler``
+* :py:class:`FileSystemEventHandler`
 
 """
 
@@ -105,17 +102,19 @@ class TrueDirModifiedEvent(DirModifiedEvent):
 class FileSystemEventHandler(FileSystemEventHandler):
     """
     Base file system event handler that you can override methods from.
-    With modified dispatch method, added ``on_xxxx_modified methods``,
-    thus covering specific needs of lazydog.
+    With modified dispatch method, added :py:meth:`on_data_modified` 
+    and :py:meth:`on_meta_modified` methods, thus covering specific 
+    needs of lazydog.
     """
 
     def dispatch(self, event):
-        """Dispatches events to the appropriate methods.
+        """
+        Dispatches events to the appropriate methods.
 
         :param event:
             The event object representing the file system event.
         :type event:
-            :class:`FileSystemEvent`
+            :py:class:`~watchdog.events.FileSystemEvent`
         """
         self.on_any_event(event)
         _method_map = {
@@ -133,9 +132,9 @@ class FileSystemEventHandler(FileSystemEventHandler):
         """Called when a file or directory true content is modified.
 
         :param event:
-            Event representing file/directory modification.
+            Event representing file or directory modification.
         :type event:
-            :class:`DirModifiedEvent` or :class:`FileModifiedEvent`
+            :py:class:`DirModifiedEvent` or :py:class:`FileModifiedEvent`
         """
         self.on_modified(event)
         
@@ -143,11 +142,9 @@ class FileSystemEventHandler(FileSystemEventHandler):
         """Called when a file or directory metadata is modified.
 
         :param event:
-            Event representing file/directory modification.
+            Event representing file or directory modification.
         :type event:
-            :class:`DirModifiedEvent` or :class:`FileModifiedEvent`
+            :py:class:`DirModifiedEvent` or :py:class:`FileModifiedEvent`
         """
         self.on_modified(event)
 
-class FileSystemEvent(FileSystemEvent):
-    pass

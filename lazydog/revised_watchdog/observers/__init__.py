@@ -14,16 +14,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
-"""
-.. automodule:: lazydog.revised_watchdog.observers.inotify
-   :members:
-
-.. automodule:: lazydog.revised_watchdog.observers.inotify_c
-   :members:
-   
-.. automodule:: lazydog.revised_watchdog.observers.inotify_buffer
-   :members:
-
-"""

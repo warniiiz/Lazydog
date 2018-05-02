@@ -6,12 +6,10 @@
 Welcome to Lazydog's documentation!
 ===================================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
  
-   readme_link
+   README
    autodoc
 
 

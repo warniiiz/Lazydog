@@ -68,7 +68,7 @@ is the current one (using ``os.getcwd()``).
             # If any, it logs it directly in the console.
             if len(local_events) > 0:
                 logging.info('')
-                logging.info('LIST OF THE LAST HIGH-LEVEL EVENTS: ')
+                logging.info('LIST OF THE LAST EVENTS: ')
             for e in local_events:
                 logging.info(e)
             
@@ -122,7 +122,7 @@ def logging_in_console(directory:str=''):
             
             if len(local_events) > 0:
                 logging.info('')
-                logging.info('LISTE DES EVENEMENTS PRETS: ')
+                logging.info('LIST OF THE LAST EVENTS: ')
             for e in local_events:
                 logging.info(e)
             

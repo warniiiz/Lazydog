@@ -1,0 +1,10 @@
+Lazydog
+Copyright 2018 Clément Warneys
+
+This software contains code derived from watchdog python API
+Licensed under Apache License Version 2.0
+https://github.com/gorakhargosh/watchdog
+
+This software contains code derived from dropbox python API
+Licensed under Apache License Version 2.0
+https://github.com/dropbox/dropbox-api-content-hasher

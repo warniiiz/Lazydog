@@ -23,8 +23,9 @@ import os
 
 sys.path.insert(0, os.path.abspath('../lazydog'))
 sys.path.insert(0, os.path.abspath('..'))
-sys.path.insert(0, os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('./lazydog'))
+
+sys.path.insert(0, os.path.abspath('./lazydog'))  # special for readTheDocs
+sys.path.insert(0, os.path.abspath('.'))          # special for readTheDocs 
 
 # -- General configuration ------------------------------------------------
 

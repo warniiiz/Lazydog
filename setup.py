@@ -54,6 +54,8 @@ setup(
     url='http://github.com/warniiiz/lazydog/',
     license='Apache Software License',
     author='Clement Warneys',
+
+    python_requires='>3.5',
     tests_require=['pytest'],
     
     #===========================================================================
@@ -61,6 +63,7 @@ setup(
     # import pip
     # for x in pip.get_installed_distributions(): print(x)
     #===========================================================================
+    
     install_requires=['watchdog>=0.8.3',
                     ],
     cmdclass={'test': PyTest},

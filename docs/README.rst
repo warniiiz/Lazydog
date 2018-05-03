@@ -15,7 +15,7 @@ How to install it
 
 The easiest way:
 
-::
+.. code-block:: bash
 
     $ pip3 install lazydog
 
@@ -26,7 +26,7 @@ Where the watchdog module would throw dozen of events after each user
 event, lazydog only throws one. For example, ask lazidog to watch any
 existing directory:
 
-::
+.. code-block:: bash
 
     $ lazydog /the/directory/you/want/to/watch
 
@@ -35,20 +35,20 @@ And just move a file in the watched directory (here from
 ``/watched/directory/move_test_2.txt``), and wait 2 seconds. You will
 get something like this in the console:
 
-::
+.. code-block:: bash
 
     INFO -
     INFO - LIST OF THE LAST EVENTS:
-    INFO - moved: '/move_test.txt' to '/move_test_2.txt' mtime[1512151173.0] size[5] inode[51675246]
+    INFO - moved: '/move_test.txt' to '/move_test_2.txt' mtime[1512151173.0] size[5]
     INFO -
 
 Try to copy the same file, and you will get somthiing like this:
 
-::
+.. code-block:: bash
 
     INFO -
     INFO - LIST OF THE LAST EVENTS:
-    INFO - copied: '/move_test_2.txt' to '/move_test_2 - Copie.txt' mtime[1512151173.0] size[5] inode[51675199]
+    INFO - copied: '/move_test_2.txt' to '/move_test_2 - Copie.txt' mtime[1512151173.0] size[5]
     INFO -
 
 Only one event per user action. You can try it with other type of action
@@ -65,8 +65,7 @@ module). The watched directory is the current one (using
 Please note that once installed, using the ``$ lazydog`` command in the
 console does just the same.
 
-.. code:: python
-
+.. code-block:: python
 
     import logging
     import os
@@ -93,6 +92,8 @@ console does just the same.
     highlevel_handler = HighlevelEventHandler.get_instance(watched_dir)
     # starting it (since it is a thread)
     highlevel_handler.start()
+    # log first message
+    logging.info('LISTENING EVENTS IN DIR: \'%s\'' % watched_dir)
         
     # OPERATING
     try:
@@ -103,14 +104,8 @@ console does just the same.
             local_events = highlevel_handler.get_available_events()
             
             # If any, it logs it directly in the console.
-            if len(local_events) > 0:
-                logging.info('')
-                logging.info('LIST OF THE LAST EVENTS: ')
             for e in local_events:
                 logging.info(e)
-            
-            if len(local_events) > 0:
-                logging.info('')
 
         # Keyboard <CTRL+C> interrupts the loop 
         except KeyboardInterrupt:   
@@ -130,7 +125,7 @@ changes. It's not uncommon to encounter a system limit on the number of
 files you can monitor (for example 8192 directories). You can get your
 current inotify file watch limit by executing:
 
-::
+.. code-block:: bash
 
     $ cat /proc/sys/fs/inotify/max_user_watches
     8192
@@ -139,14 +134,14 @@ When this limit is not enough to monitor all files inside a directory,
 the limit must be increased for Lazydog to work properly. You can set a
 new limit temporary with:
 
-::
+.. code-block:: bash
 
     $ sudo sysctl fs.inotify.max_user_watches=524288
     $ sudo sysctl -p
 
 If you like to make your limit permanent, use:
 
-::
+.. code-block:: bash
 
     $ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
     $ sudo sysctl -p
@@ -163,7 +158,7 @@ Prerequisites
 Main dependency of lazydog, is the python watchdog API. You can install
 it using the following command:
 
-::
+.. code-block:: bash
 
     $ pip3 install watchdog
 
@@ -175,7 +170,7 @@ Installing development environment
 
 Just clone the repository in your local working directory (or fork it).
 
-::
+.. code-block:: bash
 
     $ git clone https://github.com/warniiiz/Lazydog
 
@@ -184,7 +179,7 @@ refer to the `pytest
 documentation <https://docs.pytest.org/en/latest/getting-started.html>`__
 ).
 
-::
+.. code-block:: bash
 
     $ pip3 install pytest
 
@@ -192,7 +187,7 @@ You will also need Sphinx package for documentation purpose (or refer to
 the `Sphinx
 documentation <http://www.sphinx-doc.org/en/stable/install.html>`__ ).
 
-::
+.. code-block:: bash
 
     $ apt-get install python-sphinx
 
@@ -207,13 +202,13 @@ them has attached test functions, that are in the ``/lazydog/test``
 directory. You can launch tests unitary like this (for example for
 testing the events module):
 
-::
+.. code-block:: bash
 
     $ pytest lazydog/test/test_events.py
 
 Kind of results:
 
-::
+.. code-block:: bash
 
     ================================= test session starts =================================
     platform linux -- Python 3.4.2, pytest-3.5.0, py-1.5.3, pluggy-0.6.0
@@ -228,7 +223,7 @@ Kind of results:
 You can also test the whole package (assuming you are in the
 developpement directory):
 
-::
+.. code-block:: bash
 
     $ pytest
 
@@ -237,14 +232,14 @@ Test coverage
 
 Check the test coverage:
 
-::
+.. code-block:: bash
 
     $ py.test --cov lazydog
 
 Test coverage is > 90%. The metric is not very relevant about the test
 quality, but at least you will be reasssured there are some tests ;)
 
-::
+.. code-block:: bash
 
     ========================== test session starts ===========================
     platform linux -- Python 3.4.2, pytest-3.5.0, py-1.5.3, pluggy-0.6.0
@@ -301,7 +296,7 @@ Please document each change. If you want to check the result before
 publishing, you can run the following after each documentation
 modification:
 
-::
+.. code-block:: bash
 
     $ cd docs    # first go in the /docs subdirectory.
     $ make html  # recompute the sphinx documentation
@@ -313,7 +308,7 @@ Note that if you did not modify local file from ``/docs`` subdirectory,
 the changes will not be taken... you can use the following command to
 force recomputing all the changes:
 
-::
+.. code-block:: bash
 
     $ touch autodoc.rst; make html 
 
@@ -325,7 +320,7 @@ Pandoc, please refer to `Pandoc
 documentation <https://pandoc.org/installing.html>`__ for more
 information):
 
-::
+.. code-block:: bash
 
     pandoc --from=markdown --to=rst --output=README.rst ../README.md     # Assuming you are in the /docs subdirectory.
 

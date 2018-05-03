@@ -56,6 +56,8 @@ is the current one (using ``os.getcwd()``).
     highlevel_handler = HighlevelEventHandler.get_instance(watched_dir)
     # starting it (since it is a thread)
     highlevel_handler.start()
+    # log first message
+    logging.info('LISTENING EVENTS IN DIR: \'%s\'' % watched_dir)
         
     # OPERATING
     try:
@@ -66,14 +68,8 @@ is the current one (using ``os.getcwd()``).
             local_events = highlevel_handler.get_available_events()
             
             # If any, it logs it directly in the console.
-            if len(local_events) > 0:
-                logging.info('')
-                logging.info('LIST OF THE LAST EVENTS: ')
             for e in local_events:
                 logging.info(e)
-            
-            if len(local_events) > 0:
-                logging.info('')
 
         # Keyboard <CTRL+C> interrupts the loop 
         except KeyboardInterrupt:   
@@ -84,6 +80,7 @@ is the current one (using ``os.getcwd()``).
 
 import time
 import logging
+import os
 
 from lazydog.handlers import HighlevelEventHandler
 
@@ -107,28 +104,28 @@ def logging_in_console(directory:str=''):
     # add the handlers to the logger
     logger.addHandler(console_handler)
     
-    
-    # MAIN 
-    import os
+    # INITIALIZE 
+    # get dir in parameter else current dir
     watched_dir = directory if len(directory) > 1 else os.getcwd()
-    
+    # initializing a new HighlevelEventHandler
     highlevel_handler = HighlevelEventHandler.get_instance(watched_dir)
+    # starting it (since it is a thread)
     highlevel_handler.start()
-    
+    # log first message
+    logging.info('LISTENING EVENTS IN DIR: \'%s\'' % watched_dir)
+
     try:
         while True:
+
+            # The following loop check every 1 second if any new event.
             time.sleep(1)
             local_events = highlevel_handler.get_available_events()
-            
-            if len(local_events) > 0:
-                logging.info('')
-                logging.info('LIST OF THE LAST EVENTS: ')
+
+            # If any, it logs it directly in the console.
             for e in local_events:
                 logging.info(e)
-            
-            if len(local_events) > 0:
-                logging.info('')
                 
+    # Keyboard <CTRL+C> interrupts the loop 
     except KeyboardInterrupt:   
         highlevel_handler.stop()
     

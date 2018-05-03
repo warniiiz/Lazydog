@@ -100,5 +100,5 @@ lazydog.dropbox_content_hasher
 
 """
 
-__version__ = '0.1'
+__version__ = '0.1.1'
 

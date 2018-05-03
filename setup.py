@@ -29,11 +29,11 @@ def read(*filenames, **kwargs):
             buf.append(f.read())
     return sep.join(buf)
 
-long_description = 'Python module monitoring high-level file system events ' +
-                   'like Creation, Modification, Move, Copy, and Deletion of ' +
-                   'files and folders. Lazydog tries to aggregate low-level ' +
-                   'events between them in order to emit a minimum number of ' +
-                   'high-level events (actualy one event per user action). ' +
+long_description = 'Python module monitoring high-level file system events ' + \
+                   'like Creation, Modification, Move, Copy, and Deletion of ' + \
+                   'files and folders. Lazydog tries to aggregate low-level ' + \
+                   'events between them in order to emit a minimum number of ' + \
+                   'high-level events (actualy one event per user action). ' + \
                    'Lazydog uses python Watchdog module to detect low-level events.'
 
 class PyTest(TestCommand):
@@ -53,9 +53,10 @@ setup(
     version=lazydog.__version__,
     url='http://github.com/warniiiz/lazydog/',
     license='Apache Software License',
-    author='Clement Warneys',
+    author='Clément Warneys',
+    author_email='clement.warneys@gmail.com',
 
-    python_requires='>3.5',
+    python_requires='>=3.5',
     tests_require=['pytest'],
     
     #===========================================================================
@@ -67,24 +68,37 @@ setup(
     install_requires=['watchdog>=0.8.3',
                     ],
     cmdclass={'test': PyTest},
-    author_email='clement.warneys@gmail.com',
     description='User-level filesystem event observer',
+
     long_description=long_description,
-    packages=['lazydog'],
+    keywords='python watchdog inotify monitoring watcher observer file filesystem filesystem-events copy move create delete modify detect',
+
+    project_urls={
+        'Documentation': 'http://lazydog.readthedocs.io/',
+        'Source': 'https://github.com/warniiiz/lazydog',
+    },
+
+    packages=['lazydog', 'lazydog.revised_watchdog', 'lazydog.revised_watchdog.observers'],
     include_package_data=True,
     platforms='any',
-    test_suite='lazydog.test.test_lazydog',
+    test_suite='lazydog.test',
     classifiers = [
-        'Programming Language :: Python',
+        'Programming Language :: Python :: 3',
         'Development Status :: 4 - Beta',
         'Natural Language :: English',
-        'Environment :: Web Environment',
+        'Environment :: No Input/Output (Daemon)',
         'Intended Audience :: Developers',
+        'Intended Audience :: System Administrators',
+        'Intended Audience :: Information Technology',
         'License :: OSI Approved :: Apache Software License',
-        'Operating System :: OS Independent',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-        'Topic :: Software Development :: Libraries :: Application Frameworks',
+        'Operating System :: POSIX :: Linux',
+        'Topic :: System :: Monitoring',
+        'Topic :: System :: Filesystems',
+        'Topic :: Desktop Environment :: File Managers',
+        'Topic :: Security',
+        'Topic :: Software Development :: Libraries :: Python Modules'
         ],
+
     entry_points = {
         'console_scripts': ['lazydog=lazydog.lazydog:main'],
     },

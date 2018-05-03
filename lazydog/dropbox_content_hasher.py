@@ -26,7 +26,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import hashlib
-import six
+# import six
 
 import time
 import os
@@ -122,8 +122,8 @@ class DropboxContentHasher(object):
             raise AssertionError(
                 "can't use this object anymore; you already called digest()")
 
-        assert isinstance(new_data, six.binary_type), (
-            "Expecting a byte string, got {!r}".format(new_data))
+        # assert isinstance(new_data, six.binary_type), (
+        #     "Expecting a byte string, got {!r}".format(new_data))
 
         new_data_pos = 0
         while new_data_pos < len(new_data):

@@ -11,7 +11,7 @@ Python module monitoring user-level file system events like Creation, Modificati
 
 The easiest way:
 
-```
+```bash
 $ pip3 install lazydog
 ```
 
@@ -21,25 +21,25 @@ $ pip3 install lazydog
 
 Where the watchdog module would throw dozen of events after each user event, lazydog only throws one. For example, ask lazidog to watch any existing directory:
 
-```
+```bash
 $ lazydog /the/directory/you/want/to/watch
 ```
 
 And just move a file in the watched directory (here from `/watched/directory/move_test.txt` to ```/watched/directory/move_test_2.txt```), and wait 2 seconds. You will get something like this in the console:
 
-```
+```bash
 INFO -
 INFO - LIST OF THE LAST EVENTS:
-INFO - moved: '/move_test.txt' to '/move_test_2.txt' mtime[1512151173.0] size[5] inode[51675246]
+INFO - moved: '/move_test.txt' to '/move_test_2.txt' mtime[1512151173.0] size[5]
 INFO -
 ```
 
 Try to copy the same file, and you will get somthiing like this:
 
-```
+```bash
 INFO -
 INFO - LIST OF THE LAST EVENTS:
-INFO - copied: '/move_test_2.txt' to '/move_test_2 - Copie.txt' mtime[1512151173.0] size[5] inode[51675199]
+INFO - copied: '/move_test_2.txt' to '/move_test_2 - Copie.txt' mtime[1512151173.0] size[5]
 INFO -
 ```
 
@@ -55,8 +55,7 @@ The watched directory is the current one (using ```os.getcwd()```).
 Please note that once installed, using the ```$ lazydog``` command in the console
 does just the same.
 
-```python 
-
+~~~python
 import logging
 import os
 
@@ -82,6 +81,8 @@ watched_dir = directory if len(directory) > 1 else os.getcwd()
 highlevel_handler = HighlevelEventHandler.get_instance(watched_dir)
 # starting it (since it is a thread)
 highlevel_handler.start()
+# log first message
+logging.info('LISTENING EVENTS IN DIR: \'%s\'' % watched_dir)
     
 # OPERATING
 try:
@@ -92,20 +93,14 @@ try:
         local_events = highlevel_handler.get_available_events()
         
         # If any, it logs it directly in the console.
-        if len(local_events) > 0:
-            logging.info('')
-            logging.info('LIST OF THE LAST EVENTS: ')
         for e in local_events:
             logging.info(e)
-        
-        if len(local_events) > 0:
-            logging.info('')
 
     # Keyboard <CTRL+C> interrupts the loop 
     except KeyboardInterrupt:   
         highlevel_handler.stop()
 
-```
+~~~
 
 
 ### Getting further
@@ -117,21 +112,21 @@ Please find full code documentation in an HTML format on ReadTheDocs.org: http:/
 
 Watchdog uses inotify by default on Linux to monitor directories for changes. It's not uncommon to encounter a system limit on the number of files you can monitor (for example 8192 directories). You can get your current inotify file watch limit by executing:
  
-```
+```bash
 $ cat /proc/sys/fs/inotify/max_user_watches
 8192
 ```
 
 When this limit is not enough to monitor all files inside a directory, the limit must be increased for Lazydog to work properly. You can set a new limit temporary with:
  
-```
+```bash
 $ sudo sysctl fs.inotify.max_user_watches=524288
 $ sudo sysctl -p
 ```
 
 If you like to make your limit permanent, use:
 
-``` 
+```bash
 $ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
 $ sudo sysctl -p
 ```
@@ -147,7 +142,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 Main dependency of lazydog, is the python watchdog API. You can install it using the following command:
 
-```
+```bash
 $ pip3 install watchdog
 ```
 
@@ -158,19 +153,19 @@ Please read the official documentation for any question about this project: http
 
 Just clone the repository in your local working directory (or fork it).
 
-```
+```bash
 $ git clone https://github.com/warniiiz/Lazydog
 ```
 
 In order to contribute, you will need pytest for testing purpose (or refer to the [pytest documentation](https://docs.pytest.org/en/latest/getting-started.html) ).
 
-```
+```bash
 $ pip3 install pytest
 ```
 
 You will also need Sphinx package for documentation purpose (or refer to the [Sphinx documentation](http://www.sphinx-doc.org/en/stable/install.html) ).
 
-```
+```bash
 $ apt-get install python-sphinx
 ```
 
@@ -182,13 +177,13 @@ $ apt-get install python-sphinx
 
 The different python module are in the ```/lazydog``` directory. Each of them has attached test functions, that are in the ```/lazydog/test``` directory. You can launch tests unitary like this (for example for testing the events module):
 
-```
+```bash
 $ pytest lazydog/test/test_events.py
 ```
 
 Kind of results:
 
-```
+```bash
 ================================= test session starts =================================
 platform linux -- Python 3.4.2, pytest-3.5.0, py-1.5.3, pluggy-0.6.0
 rootdir: /media/maxtor/media/Python/Lazydog, inifile:
@@ -202,7 +197,7 @@ lazydog/test/test_events.py ................                                    
 
 You can also test the whole package (assuming you are in the developpement directory):
 
-```
+```bash
 $ pytest
 ```
 
@@ -211,13 +206,13 @@ $ pytest
 
 Check the test coverage:
 
-```
+```bash
 $ py.test --cov lazydog
 ```
 
 Test coverage is > 90%. The metric is not very relevant about the test quality, but at least you will be reasssured there are some tests ;)
 
-```
+```bash
 ========================== test session starts ===========================
 platform linux -- Python 3.4.2, pytest-3.5.0, py-1.5.3, pluggy-0.6.0
 rootdir: /media/maxtor/media/Python/Lazydog, inifile:
@@ -269,7 +264,7 @@ This documentation is automatically updated each time an update is made no GitHu
 
 Please document each change. If you want to check the result before publishing, you can run the following after each documentation modification:
 
-```
+```bash
 $ cd docs    # first go in the /docs subdirectory.
 $ make html  # recompute the sphinx documentation
 ```
@@ -278,13 +273,13 @@ The resulted documentation is then in the local relative folder ```/docs/_build/
 
 Note that if you did not modify local file from ```/docs``` subdirectory, the changes will not be taken... you can use the following command to force recomputing all the changes:
 
-```
+```bash
 $ touch autodoc.rst; make html 
 ```
 
 Last thing. If you modified the main ```README.md```, and you want the changes to appear in the documentation (and not only on github), you have to convert the .md file to a .rst one. You can use the pandoc app to do thiss conversion, using the following command (after installing Pandoc, please refer to [Pandoc documentation](https://pandoc.org/installing.html) for more information):
 
-```
+```bash
 pandoc --from=markdown --to=rst --output=README.rst ../README.md     # Assuming you are in the /docs subdirectory.
 ```
 
